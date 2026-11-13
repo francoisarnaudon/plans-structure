@@ -1,0 +1,18 @@
+{
+ "projets": {
+  "serene-exe-2027": {
+   "maj": "13/11/2026 15:04",
+   "statut": "en_cours",
+   "nb": 28,
+   "protege": true,
+   "nom": "SERENE - EXE - 2027"
+  },
+  "sakata-exe": {
+   "statut": "en_cours",
+   "nb": 5,
+   "maj": "09/11/2026 06:43",
+   "nom": "SAKATA-EXE",
+   "protege": true
+  }
+ }
+}

@@ -1,0 +1,3472 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plans</title>
+<style>
+:root{
+  --bg:#1b1f24; --bg2:#232830; --bd:#343b45; --fg:#e8ecf1; --fg2:#98a3b1;
+  --acc:#4fa8ff; --acc2:#2b6fb8; --warn:#ffb454;
+  --sb:300px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font:14px/1.45 "Segoe UI",system-ui,-apple-system,sans-serif;
+  background:var(--bg);color:var(--fg);overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;cursor:pointer;background:none;border:0}
+
+#app{display:grid;grid-template-columns:var(--sb) 1fr;grid-template-rows:auto 1fr;height:100%}
+header{
+  grid-column:1/-1;display:flex;align-items:center;gap:14px;
+  padding:0 16px;height:52px;background:var(--bg2);border-bottom:1px solid var(--bd);
+}
+header h1{font-size:15px;font-weight:600;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+header .meta{color:var(--fg2);font-size:12px;white-space:nowrap}
+header .sp{flex:1}
+header a.accueil{color:var(--fg2);text-decoration:none;font-size:13px;white-space:nowrap;border:1px solid var(--bd,#3a4250);border-radius:5px;padding:2px 8px}
+header a.accueil:hover{color:#fff}
+#burger{display:none;font-size:20px;padding:4px 10px;border-radius:6px}
+#burger:hover{background:#2f3641}
+
+aside{background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;min-height:0}
+.search{padding:10px}
+.search input{
+  width:100%;padding:8px 10px;border-radius:7px;border:1px solid var(--bd);
+  background:#171b20;color:var(--fg);font:inherit;outline:none;
+}
+.search input:focus{border-color:var(--acc)}
+#count{padding:0 12px 8px;color:var(--fg2);font-size:11.5px}
+#list{flex:1;overflow-y:auto;padding:0 8px 12px}
+#list::-webkit-scrollbar{width:10px}
+#list::-webkit-scrollbar-thumb{background:#3c444f;border-radius:5px;border:3px solid var(--bg2)}
+.item{
+  display:block;width:100%;text-align:left;padding:8px 10px;border-radius:7px;
+  border-left:3px solid transparent;margin-bottom:2px;
+}
+.item:hover{background:#2b323b}
+.item.on{background:#26364a;border-left-color:var(--acc)}
+.item .n{font-weight:600;font-size:13px}
+.item .t{color:var(--fg2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item.on .t{color:#c4d3e4}
+.item .d{color:#79838f;font-size:11px;font-variant-numeric:tabular-nums}
+.item .b3d{
+  display:inline-block;margin-right:5px;padding:0 5px;border-radius:8px;
+  background:#3b2f52;color:#c9b6ee;font-size:10px;font-weight:600;
+  vertical-align:1px;
+}
+.item.on .d{color:#9fb3c8}
+.niv{
+  display:flex;align-items:center;gap:6px;width:100%;text-align:left;
+  margin:10px 0 3px;padding:5px 8px;border-radius:6px;
+  color:#aab7c6;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  border-bottom:1px solid var(--bd);
+}
+.niv:first-child{margin-top:2px}
+.niv:hover{background:#2b323b;color:var(--fg)}
+.niv .fl{display:inline-block;width:10px;transition:transform .15s}
+.niv.ferme .fl{transform:rotate(-90deg)}
+.niv .nb{margin-left:auto;font-weight:400;color:#79838f;letter-spacing:0}
+.empty{padding:20px 12px;color:var(--fg2);font-size:12.5px;text-align:center}
+
+main{display:flex;flex-direction:column;min-width:0;min-height:0;background:#14171b}
+.tools{
+  display:flex;align-items:center;gap:6px;padding:0 12px;
+  background:var(--bg2);border-bottom:1px solid var(--bd);
+  height:41px;flex:0 0 41px;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;
+}
+.tools button{padding:6px 11px;border-radius:6px;border:1px solid var(--bd);background:#272d36;font-size:13px;flex:0 0 auto;white-space:nowrap}
+.tools button:hover{background:#333b46;border-color:#4a5462}
+.tools button.on{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:600}
+.tools .sep{width:1px;height:22px;background:var(--bd);margin:0 5px}
+.tools .sp{flex:1}
+#zoomval{min-width:56px;text-align:center;color:var(--fg2);font-variant-numeric:tabular-nums;font-size:12.5px}
+select{
+  padding:6px 8px;border-radius:6px;border:1px solid var(--bd);background:#272d36;
+  color:var(--fg);font:inherit;font-size:12.5px;outline:none;cursor:pointer;
+}
+#stage{position:relative;flex:1;min-height:0;overflow:hidden}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#cv.grab{cursor:grab} #cv.grabbing{cursor:grabbing} #cv.cross{cursor:crosshair}
+#hint{
+  position:absolute;left:50%;top:14px;transform:translateX(-50%);
+  background:rgba(20,23,27,.94);border:1px solid var(--bd);border-radius:8px;
+  padding:7px 14px;font-size:12.5px;color:#cfd8e3;pointer-events:none;
+  opacity:0;transition:opacity .18s;max-width:82%;text-align:center;
+}
+#hint.show{opacity:1}
+#annot{
+  position:absolute;left:10px;top:10px;z-index:20;display:none;
+  background:rgba(30,35,42,.96);border:1px solid var(--bd);border-radius:10px;
+  padding:8px;box-shadow:0 6px 24px rgba(0,0,0,.45);
+  max-width:calc(100% - 20px);
+}
+#annot.on{display:block}
+#annot .grp{display:flex;flex-wrap:wrap;gap:4px;align-items:center;margin-bottom:5px}
+#annot .grp:last-child{margin-bottom:0}
+#annot button{
+  min-width:30px;height:28px;padding:0 7px;border-radius:6px;
+  border:1px solid var(--bd);background:#272d36;color:var(--fg);
+  font:inherit;font-size:13px;line-height:1;
+}
+#annot button:hover{background:#333b46}
+#annot button.on{background:var(--acc2);border-color:var(--acc);color:#fff}
+#annot button:disabled{opacity:.4}
+#annot .sep{width:1px;height:20px;background:var(--bd);margin:0 3px}
+#annot .puce{
+  width:22px;height:22px;min-width:22px;border-radius:50%;padding:0;
+  border:2px solid transparent;
+}
+#annot .puce.on{border-color:#fff;box-shadow:0 0 0 2px var(--acc)}
+#annot .lib{color:var(--fg2);font-size:11px;margin-right:3px}
+/* Recherche de texte DANS les plans (Ctrl+F) : barre flottante en haut a
+   droite de la zone de dessin, comme la recherche d'un navigateur. */
+#rech{
+  position:absolute;right:12px;top:10px;z-index:25;display:none;
+  background:rgba(30,35,42,.97);border:1px solid var(--bd);border-radius:10px;
+  padding:8px;box-shadow:0 6px 24px rgba(0,0,0,.45);
+  width:min(330px,calc(100% - 24px));
+}
+#rech.on{display:block}
+#rech .ligne{display:flex;gap:5px;align-items:center}
+#rech input[type=search]{
+  flex:1;min-width:0;padding:6px 9px;border-radius:6px;border:1px solid var(--bd);
+  background:#171b20;color:var(--fg);font:inherit;font-size:13px;outline:none;
+}
+#rech input[type=search]:focus{border-color:var(--acc)}
+#rech button{
+  min-width:28px;height:28px;padding:0 7px;border-radius:6px;
+  border:1px solid var(--bd);background:#272d36;color:var(--fg);
+  font:inherit;font-size:13px;line-height:1;flex:0 0 auto;
+}
+#rech button:hover{background:#333b46}
+#rech button:disabled{opacity:.4;cursor:default}
+#rech .opt{display:flex;align-items:center;gap:6px;margin-top:7px;color:var(--fg2);font-size:12px}
+#rech .opt label{display:flex;align-items:center;gap:5px;cursor:pointer}
+#rech .nb{color:var(--fg2);font-size:12px;white-space:nowrap;font-variant-numeric:tabular-nums}
+#rech .res{max-height:min(46vh,320px);overflow-y:auto;margin-top:7px;display:none}
+#rech .res.on{display:block}
+#rech .res::-webkit-scrollbar{width:9px}
+#rech .res::-webkit-scrollbar-thumb{background:#3c444f;border-radius:5px;border:3px solid #1e232a}
+#rech .res button{
+  display:block;width:100%;height:auto;text-align:left;padding:6px 8px;margin-bottom:2px;
+  border:0;background:none;border-left:3px solid transparent;border-radius:6px;font-size:12px;
+}
+#rech .res button:hover{background:#2b323b}
+#rech .res button.on{background:#26364a;border-left-color:var(--acc)}
+#rech .res .pl{color:var(--fg2);font-size:11px}
+#rech .res .tx{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#rech .res mark{background:#8a6d1f;color:#fff;border-radius:2px;padding:0 1px}
+#expo{
+  position:fixed;inset:0;z-index:55;display:none;align-items:center;
+  justify-content:center;background:rgba(10,12,15,.72);padding:20px;
+}
+#expo.on{display:flex}
+#expo .bloc{
+  width:100%;max-width:460px;max-height:82vh;display:flex;flex-direction:column;
+  background:var(--bg2);border:1px solid var(--bd);border-radius:12px;padding:20px;
+}
+#expo h3{margin:0 0 4px;font-size:15px}
+#expo .aide{color:var(--fg2);font-size:12px;margin:0 0 12px}
+#expo .liste{
+  flex:1;min-height:80px;overflow:auto;border:1px solid var(--bd);
+  border-radius:8px;background:#20262e;padding:6px;
+}
+#expo label{
+  display:flex;gap:8px;align-items:center;padding:5px 6px;border-radius:5px;
+  font-size:12.5px;cursor:pointer;
+}
+#expo label:hover{background:#2b323b}
+#expo .niv{margin:8px 0 2px;cursor:pointer}
+#expo .niv:first-child{margin-top:0}
+#expo label span{color:var(--fg2)}
+#expo .rangee{display:flex;gap:8px;margin-top:12px}
+#expo button{
+  flex:1;padding:9px;border-radius:8px;border:1px solid var(--bd);
+  background:#272d36;color:var(--fg);font:inherit;font-size:13px;
+}
+#expo button.p{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+#expo button:disabled{opacity:.5}
+#expo .petit{display:flex;gap:6px;margin:8px 0 0}
+#expo .petit button{flex:0 0 auto;padding:4px 10px;font-size:12px}
+#expo .petit select{padding:3px 6px;font-size:12px;margin-left:auto}
+#expo .etat{color:var(--fg2);font-size:12px;margin-top:10px;min-height:16px}
+#coffre{
+  position:fixed;inset:0;z-index:60;display:none;align-items:center;
+  justify-content:center;background:#14171b;padding:24px;
+}
+#coffre.on{display:flex}
+#coffre .bloc{
+  width:100%;max-width:380px;background:var(--bg2);border:1px solid var(--bd);
+  border-radius:12px;padding:26px 24px;text-align:center;
+}
+#coffre h2{font-size:16px;margin:0 0 6px}
+#coffre p{color:var(--fg2);font-size:12.5px;margin:0 0 18px;line-height:1.5}
+#coffre input[type=password]{
+  width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--bd);
+  background:#272d36;color:var(--fg);font:inherit;font-size:14px;outline:none;
+  text-align:center;letter-spacing:2px;
+}
+#coffre input[type=password]:focus{border-color:var(--acc)}
+#coffre button{
+  width:100%;margin-top:12px;padding:10px;border-radius:8px;border:0;
+  background:var(--acc);color:#fff;font:inherit;font-size:14px;font-weight:600;
+}
+#coffre button:disabled{opacity:.55}
+#coffre .memo{
+  display:flex;align-items:center;gap:7px;justify-content:center;
+  margin-top:14px;color:var(--fg2);font-size:12px;
+}
+#coffre .err{color:#ff8b8b;font-size:12.5px;margin-top:12px;min-height:16px}
+#splash{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;color:var(--fg2);text-align:center;padding:24px;
+}
+#splash b{color:var(--fg);font-size:15px;font-weight:600}
+.bar{
+  display:flex;align-items:center;gap:16px;padding:0 12px;background:var(--bg2);
+  border-top:1px solid var(--bd);font-size:12px;color:var(--fg2);
+  font-variant-numeric:tabular-nums;
+  /* hauteur FIXE et pas de retour a la ligne : une barre qui grandit
+     retrecirait la zone du plan, et le dessin sauterait pendant la mesure */
+  height:32px;flex:0 0 32px;flex-wrap:nowrap;overflow:hidden;white-space:nowrap;
+}
+.bar > span{overflow:hidden;text-overflow:ellipsis}
+#infoPlan{flex:0 1 auto;min-width:0}
+#infoMes{flex:0 1 auto;min-width:0;text-align:right}
+#infoEch{flex:0 0 auto}
+.bar b{color:var(--fg);font-weight:600}
+.tag{
+  display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:11px;
+  background:#2a3441;color:#a9c6e8;font-size:11.5px;
+}
+.tag.w{background:#3a2f1c;color:var(--warn)}
+
+#modal{position:absolute;inset:0;background:rgba(10,12,15,.72);display:none;align-items:center;justify-content:center;z-index:20}
+#modal.show{display:flex}
+.box{background:var(--bg2);border:1px solid var(--bd);border-radius:11px;padding:20px;width:min(410px,92vw);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.box h3{margin:0 0 6px;font-size:15px}
+.box p{margin:0 0 14px;color:var(--fg2);font-size:12.5px;line-height:1.5}
+.box input{width:100%;padding:9px 11px;border-radius:7px;border:1px solid var(--bd);background:#171b20;color:var(--fg);font:inherit;outline:none}
+.box input:focus{border-color:var(--acc)}
+.box .row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.box .row button{padding:8px 15px;border-radius:7px;border:1px solid var(--bd);background:#272d36}
+.box .row button.p{background:var(--acc2);border-color:var(--acc);color:#fff;font-weight:600}
+
+@media(max-width:820px){
+  #app{grid-template-columns:1fr}
+  aside{position:absolute;top:52px;bottom:0;left:0;width:var(--sb);max-width:86vw;z-index:15;transform:translateX(-102%);transition:transform .2s}
+  aside.open{transform:none;box-shadow:0 0 40px rgba(0,0,0,.5)}
+  #burger{display:block}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <button id="burger" title="Liste des plans">&#9776;</button>
+    <a id="accueil" class="accueil" href="../index.html" hidden title="Tous les projets">&#8592; Projets</a>
+    <h1 id="titre">Plans</h1>
+    <span class="sp"></span>
+    <span class="meta" id="sousTitre"></span>
+  </header>
+
+  <aside id="aside">
+    <div class="search"><input id="q" type="search" placeholder="Rechercher un plan…" autocomplete="off"></div>
+    <div id="count"></div>
+    <div id="list"></div>
+  </aside>
+
+  <main>
+    <div class="tools">
+      <button id="bPrev" title="Plan précédent">&#8249;</button>
+      <button id="bNext" title="Plan suivant">&#8250;</button>
+      <span class="sep"></span>
+      <button id="bOut" title="Zoom arrière">&minus;</button>
+      <span id="zoomval">—</span>
+      <button id="bIn" title="Zoom avant">+</button>
+      <button id="bFit" title="Ajuster à l'écran (F)">Ajuster</button>
+      <button id="bTrace" class="on" hidden title="Afficher / masquer la trace : plan superposé en fond, gabarit IMPACT (T)">Trace</button>
+      <span class="sep"></span>
+      <button id="bMes" title="Mesurer : cliquez 2 points (M)">Mesurer</button>
+      <button id="bSnap" class="on" title="Accrochage : extrémité, milieu, intersection, sur le trait, parallèle (A)">Accrochage</button>
+      <button id="bClr" title="Effacer les mesures de ce plan">Effacer</button>
+      <span class="sep"></span>
+      <button id="bRech" title="Rechercher un texte dans les plans (Ctrl+F)">Rechercher</button>
+      <button id="bAnn" title="Annoter le plan : bulles, flèches, textes (N)">Annoter</button>
+      <button id="bPdf" title="Enregistrer des plans en PDF, carnets découpés en folios si besoin (P)">PDF</button>
+      <span class="sp"></span>
+      <select id="selEch" title="Échelle utilisée pour convertir les mesures"></select>
+      <select id="selUnit" title="Unité d'affichage">
+        <option value="m">m</option><option value="cm">cm</option><option value="mm">mm</option>
+      </select>
+    </div>
+
+    <div id="stage">
+      <canvas id="cv"></canvas>
+      <div id="hint"></div>
+      <div id="rech">
+        <div class="ligne">
+          <input id="rIn" type="search" placeholder="Rechercher un texte…" autocomplete="off">
+          <span class="nb" id="rNb">—</span>
+          <button id="rPrec" title="Résultat précédent (Maj+Entrée)">&#8249;</button>
+          <button id="rSuiv" title="Résultat suivant (Entrée)">&#8250;</button>
+          <button id="rFerm" title="Fermer (Échap)">&times;</button>
+        </div>
+        <div class="opt">
+          <label><input id="rTous" type="checkbox"> chercher dans tous les plans</label>
+        </div>
+        <div class="res" id="rRes"></div>
+      </div>
+      <div id="annot">
+        <div class="grp">
+          <button data-outil="choisir" title="Choisir, déplacer, tourner">&#9995;</button>
+          <span class="sep"></span>
+          <button data-outil="trait" title="Trait (Maj : droit)">&#8212;</button>
+          <button data-outil="fleche" title="Flèche (Maj : droite)">&#8599;</button>
+          <button data-outil="rect" title="Rectangle">&#9633;</button>
+          <button data-outil="ellipse" title="Rond / ellipse">&#9711;</button>
+          <button data-outil="texte" title="Texte">T</button>
+          <button data-outil="bulle" title="Bulle : texte relié à un point">&#128172;</button>
+        </div>
+        <div class="grp">
+          <button class="puce" data-coul="#e03131" style="background:#e03131"></button>
+          <button class="puce" data-coul="#f76707" style="background:#f76707"></button>
+          <button class="puce" data-coul="#2f9e44" style="background:#2f9e44"></button>
+          <button class="puce" data-coul="#1971c2" style="background:#1971c2"></button>
+          <button class="puce" data-coul="#9c36b5" style="background:#9c36b5"></button>
+          <button class="puce" data-coul="#000000" style="background:#000000"></button>
+        </div>
+        <div class="grp">
+          <span class="lib">Trait</span>
+          <button data-ep="0" title="Fin">&#8722;</button>
+          <button data-ep="1" title="Moyen">&#9473;</button>
+          <button data-ep="2" title="Épais">&#9608;</button>
+          <button id="aPlein" title="Rempli ou vide">Rempli</button>
+        </div>
+        <div class="grp">
+          <span class="lib">Texte</span>
+          <button data-taille="0" title="Petit">A</button>
+          <button data-taille="1" title="Moyen" style="font-size:15px">A</button>
+          <button data-taille="2" title="Grand" style="font-size:18px">A</button>
+          <span id="aRot" hidden>
+            <span class="sep"></span>
+            <button id="aRotG" title="Tourner à gauche (15°)">&#8630;</button>
+            <button id="aRotD" title="Tourner à droite (15°)">&#8631;</button>
+          </span>
+        </div>
+        <div class="grp">
+          <button id="aSuppr" title="Supprimer l'objet choisi (Suppr)">Supprimer</button>
+          <button id="aVider" title="Effacer toutes les annotations de ce plan">Tout effacer</button>
+        </div>
+      </div>
+      <div id="splash"><b>Choisissez un plan dans la liste</b><span>Molette = zoom · glisser = déplacer · M = mesurer · Ctrl+F = rechercher un texte</span></div>
+    </div>
+
+    <div class="bar">
+      <span id="infoPlan">—</span>
+      <span id="infoDate" class="tag" hidden></span>
+      <span id="infoEch" class="tag" hidden></span>
+      <span class="sp" style="flex:1"></span>
+      <span id="infoMes">—</span>
+    </div>
+  </main>
+</div>
+
+<div id="modal"><div class="box">
+  <h3 id="mTitre">Calibrer l'échelle</h3>
+  <p id="mTexte"></p>
+  <input id="mInput" type="text" inputmode="decimal" autocomplete="off">
+  <div class="row"><button id="mNon">Annuler</button><button id="mOui" class="p">Valider</button></div>
+</div></div>
+
+<div id="expo"><div class="bloc">
+  <h3>Enregistrer en PDF</h3>
+  <p class="aide">Choisissez les plans à enregistrer. Ce sont les PDF d'origine,
+     à l'échelle, imprimables tels quels. Un carnet peut être découpé en
+     folios : une page par cartouche, comme « Impression carnet » dans
+     Revit.</p>
+  <div class="liste" id="expoListe"></div>
+  <div class="petit">
+    <button id="expoTout">Tout</button>
+    <button id="expoRien">Rien</button>
+    <label style="display:flex;align-items:center;gap:6px;margin-left:auto;
+                  color:var(--fg2);font-size:12px">
+      <input id="expoAnn" type="checkbox" checked> avec les annotations
+    </label>
+  </div>
+  <div class="petit">
+    <label style="display:flex;align-items:center;gap:6px;
+                  color:var(--fg2);font-size:12px"
+           title="Un carnet est une seule feuille géante : chaque cartouche
+devient une page à part, cadrée dessus et mise à l'échelle du format choisi
+(comme « Impression carnet » dans Revit).">
+      <input id="expoFolios" type="checkbox"> découper les carnets en folios
+    </label>
+    <select id="expoFmt" title="Format des pages de folio">
+      <option value="A3">A3</option>
+      <option value="A4">A4</option>
+      <option value="reel">taille réelle</option>
+    </select>
+  </div>
+  <div class="etat" id="expoEtat"></div>
+  <div class="rangee">
+    <button id="expoNon">Annuler</button>
+    <button id="expoSep">Fichiers séparés</button>
+    <button id="expoUn" class="p">Un seul PDF</button>
+  </div>
+</div></div>
+
+<div id="coffre"><div class="bloc">
+  <h2>Plans protégés</h2>
+  <p>Ces plans sont chiffrés. Saisissez le mot de passe que vous a communiqué
+     François pour les consulter.</p>
+  <input id="cofMdp" type="password" autocomplete="current-password"
+         placeholder="Mot de passe">
+  <button id="cofOk">Déverrouiller</button>
+  <label class="memo"><input id="cofMemo" type="checkbox" checked>
+     Rester déverrouillé sur cet ordinateur</label>
+  <div class="err" id="cofErr"></div>
+</div></div>
+
+<script src="pdfjs/pdf.min.js"></script>
+<script>
+// GitHub Pages impose Cache-Control: max-age=600. Sans ce jeton, on rouvrirait
+// la page sur la liste de plans d'il y a dix minutes. Le jeton est fige pour
+// la session : le cache sert encore a l'interieur d'une visite.
+window.FRAIS = "?v=" + Date.now();
+document.write('<script src="version.js' + window.FRAIS + '"><\/script>');
+document.write('<script src="garde.js' + window.FRAIS + '"><\/script>');
+document.write('<script src="donnees.js' + window.FRAIS + '"><\/script>');
+</script>
+<script>
+// Cette page est-elle encore la bonne ? `index.html` echappe au jeton
+// ci-dessus (c'est LUI qu'on est en train de lire), et GitHub Pages le garde
+// 10 minutes. On compare donc le numero grave ici a celui du serveur, et on
+// se recharge sur une adresse que le cache ne connait pas.
+(function(){
+  var ici = "20261113150614";
+  if(ici.charAt(0) === "{") return;                  // dossier de developpement
+  var enLigne = (typeof VERSION !== "undefined") ? VERSION : null;
+
+  function recharger(v){
+    try{
+      var u = new URL(location.href);
+      if(u.searchParams.get("v") === v) return false; // deja tente : pas de boucle
+      u.searchParams.set("v", v);
+      location.replace(u.toString());
+      return true;
+    }catch(e){ return false; }
+  }
+  if(enLigne && enLigne !== ici && recharger(enLigne)) return;
+
+  // ONGLET RESTE OUVERT : sans ceci, une nouvelle publication ne se voyait
+  // qu'avec Ctrl+F5. On relit version.js (balise script + jeton : marche aussi
+  // en file://) toutes les minutes et a chaque retour sur l'onglet ; si le
+  // numero a change, la page se recharge d'elle-meme. Mesures, annotations et
+  // mot de passe memorise sont dans localStorage : rien n'est perdu.
+  var courant = enLigne || ici;
+  var enAttente = null;
+  function verifier(){
+    var s = document.createElement("script");
+    s.src = "version.js?v=" + Date.now();
+    s.onload = function(){
+      if(s.parentNode) s.parentNode.removeChild(s);
+      var v = (typeof VERSION !== "undefined") ? VERSION : null;
+      if(!v || v === courant) return;
+      if(document.visibilityState === "hidden"){ enAttente = v; return; }
+      recharger(v);
+    };
+    s.onerror = function(){ if(s.parentNode) s.parentNode.removeChild(s); };
+    document.head.appendChild(s);
+  }
+  setInterval(verifier, 60000);
+  document.addEventListener("visibilitychange", function(){
+    if(document.visibilityState !== "visible") return;
+    if(enAttente){ recharger(enAttente); return; }
+    verifier();
+  });
+})();
+</script>
+<script>
+"use strict";
+(function(){
+
+// Les donnees peuvent arriver chiffrees : on part vide et on les pose une
+// fois le coffre ouvert (voir poserDonnees).
+var D = {projet:"",genere:"",plans:[]};
+var PLANS = [];
+var MM_PAR_PT = 25.4/72;          // definition du point PDF : exacte
+
+try{ pdfjsLib.GlobalWorkerOptions.workerSrc = "pdfjs/pdf.worker.min.js"; }catch(e){}
+
+// ---------------------------------------------------------------- etat
+var plan=null, page=null, cache={}, ordre=[], filtre=[];
+var MAX_EN_MEMOIRE = 3;      // documents gardes ouverts (les autres liberes)
+var travailleur = null;      // UN seul worker pdf.js pour tout le site
+// PDF[id] = contenu du plan en base64, depose par plans/<id>.js.
+// DOIT etre global : le fichier du plan est charge par une balise <script>
+// et ne voit pas les variables de cette fonction.
+window.PDF = window.PDF || {};
+var PDF = window.PDF;
+var zoom=1, panX=0, panY=0, besoinFit=true, autoCadre=true;
+var tuile=null, tache=null, minuteur=null, jeton=0;
+var mesurer=false, pts=[], survol=null;
+var mesures={}, calib={}, forceEch=0, unite="m";
+var annots={};
+
+var cv=document.getElementById("cv"), ctx=cv.getContext("2d");
+var stage=document.getElementById("stage");
+var $=function(id){return document.getElementById(id)};
+
+// PLUSIEURS PROJETS SOUS LA MEME ADRESSE : ils partagent le stockage du
+// navigateur. Chaque cle est donc suffixee par l'espace du projet (gravee a
+// la publication). Lecture de repli sur l'ancienne cle sans suffixe : un site
+// publie avant le multi-projets retrouve mesures, annotations, mot de passe.
+var ESPACE = "serene-exe-2027";
+if(ESPACE.charAt(0) === "{") ESPACE = "";           // dossier de developpement
+function cleLS(k){ return ESPACE ? k + ":" + ESPACE : k; }
+function lireLS(k){
+  var v = localStorage.getItem(cleLS(k));
+  if(v === null && ESPACE) v = localStorage.getItem(k);
+  return v;
+}
+function ecrireLS(k, v){ localStorage.setItem(cleLS(k), v); }
+function oublierLS(k){ localStorage.removeItem(cleLS(k)); }
+if(ESPACE) document.getElementById("accueil").hidden = false;
+
+try{
+  mesures=JSON.parse(lireLS("fa_mesures")||"{}");
+  annots =JSON.parse(lireLS("fa_annots")||"{}");
+  calib =JSON.parse(lireLS("fa_calib")||"{}");
+  unite =lireLS("fa_unite")||"m";
+}catch(e){}
+$("selUnit").value=unite;
+
+function sauver(){
+  try{
+    ecrireLS("fa_mesures",JSON.stringify(mesures));
+    ecrireLS("fa_annots",JSON.stringify(annots));
+    ecrireLS("fa_calib",JSON.stringify(calib));
+    ecrireLS("fa_unite",unite);
+  }catch(e){}
+}
+
+function poserDonnees(obj){
+  D = obj || {projet:"",genere:"",plans:[]};
+  PLANS = D.plans || [];
+  document.title = D.projet ? (D.projet+" — Plans") : "Plans";
+  $("titre").textContent = D.projet || "Plans";
+  $("sousTitre").textContent = PLANS.length + " plan" + (PLANS.length>1?"s":"") +
+    (D.genere ? " · publié le "+D.genere : "");
+}
+
+// ---------------------------------------------------------------- coffre
+// Les plans voyagent chiffres (AES-256-GCM). La cle est derivee du mot de
+// passe ICI, dans le navigateur : elle n'est jamais envoyee a l'hebergeur, qui
+// ne detient que des blocs illisibles.
+var CLE = null;                       // cle AES en memoire, jamais stockee
+var JETON = "FrancoisAPP-visionneuse";
+
+function b64oct(b){
+  var s=atob(b), n=s.length, u=new Uint8Array(n);
+  for(var i=0;i<n;i++) u[i]=s.charCodeAt(i);
+  return u;
+}
+
+function deriverCle(mdp){
+  var e=new TextEncoder();
+  return crypto.subtle.importKey("raw", e.encode(mdp), "PBKDF2", false, ["deriveBits"])
+    .then(function(base){
+      return crypto.subtle.deriveBits(
+        {name:"PBKDF2", salt:b64oct(GARDE.sel), iterations:GARDE.it, hash:"SHA-256"},
+        base, 256);
+    })
+    .then(function(brut){
+      return crypto.subtle.importKey("raw", brut, "AES-GCM", false, ["decrypt"]);
+    });
+}
+
+// format : iv (12 octets) + chiffre + marque d'authenticite (16 octets)
+function dechiffrer(b64, cle){
+  var t=b64oct(b64);
+  return crypto.subtle.decrypt({name:"AES-GCM", iv:t.slice(0,12)},
+                               cle || CLE, t.slice(12))
+    .then(function(buf){ return new Uint8Array(buf); });
+}
+
+function ouvrirCoffre(mdp){
+  return deriverCle(mdp).then(function(cle){
+    return dechiffrer(GARDE.essai, cle).then(function(u){
+      if(new TextDecoder().decode(u) !== JETON) throw new Error("mdp");
+      CLE = cle;
+      return dechiffrer(DONNEES_CHIFFRE, cle);
+    });
+  }).then(function(u){
+    return JSON.parse(new TextDecoder().decode(u));
+  });
+}
+
+function demanderMotDePasse(){
+  var boite=$("coffre"), champ=$("cofMdp"), bouton=$("cofOk"), err=$("cofErr");
+  boite.classList.add("on");
+  setTimeout(function(){ champ.focus(); }, 50);
+
+  var auto=false;
+  function tenter(){
+    var mdp=champ.value;
+    if(!mdp) return;
+    bouton.disabled=true; err.textContent="Vérification…";
+    ouvrirCoffre(mdp).then(function(obj){
+      try{
+        if($("cofMemo").checked) ecrireLS("fa_mdp", mdp);
+        else oublierLS("fa_mdp");
+      }catch(e){}
+      boite.classList.remove("on");
+      champ.value="";
+      poserDonnees(obj);
+      lancer();
+    })["catch"](function(){
+      bouton.disabled=false;
+      // essai automatique avec un mot de passe retenu (peut-etre celui d'un
+      // AUTRE projet, lu en repli) : on demande sans crier a l'erreur
+      err.textContent = auto ? "" : "Mot de passe incorrect.";
+      if(auto){ champ.value=""; auto=false; }
+      champ.select();
+      try{ oublierLS("fa_mdp"); }catch(e){}
+    });
+  }
+  bouton.onclick=tenter;
+  champ.onkeydown=function(e){ if(e.key==="Enter") tenter(); };
+
+  // deja deverrouille sur cet ordinateur : on rouvre sans rien demander
+  var garde=null;
+  try{ garde=lireLS("fa_mdp"); }catch(e){}
+  if(garde){ champ.value=garde; auto=true; tenter(); }
+}
+
+// ---------------------------------------------------------------- liste
+var replies = {};            // rubriques repliees (par intitule de niveau)
+try{ replies = JSON.parse(lireLS("fa_replies")||"{}") || {}; }catch(e){}
+function listerPlans(){
+  var q=$("q").value.trim().toLowerCase();
+  filtre = q ? PLANS.filter(function(p){
+    return (p.num+" "+p.nom).toLowerCase().indexOf(q)>=0;
+  }) : PLANS.slice();
+
+  var l=$("list"); l.innerHTML="";
+  $("count").textContent = filtre.length===PLANS.length
+    ? PLANS.length+" plan"+(PLANS.length>1?"s":"")
+    : filtre.length+" / "+PLANS.length+" plan"+(PLANS.length>1?"s":"");
+  if(!filtre.length){ l.innerHTML='<div class="empty">Aucun plan ne correspond.</div>'; return; }
+
+  // Rubriques par niveau (`niveau`, pose par l'outil Revit). Un site publie
+  // avant cette fonction n'en a pas : liste a plat, comme avant.
+  var avecNiv = filtre.some(function(p){ return p.niveau; });
+  var courant = null, ferme = false;
+  filtre.forEach(function(p){
+    if(avecNiv && (p.niveau||"") !== courant){
+      courant = p.niveau||"";
+      // pendant une recherche, tout reste deplie : on veut voir les resultats
+      ferme = !q && !!replies[courant] && !(plan && plan.niveau===courant);
+      var h=document.createElement("button");
+      h.className="niv"+(ferme?" ferme":"");
+      h.innerHTML='<span class="fl">&#9662;</span><span class="tn"></span><span class="nb"></span>';
+      h.children[1].textContent=courant;
+      h.children[2].textContent=filtre.filter(function(x){ return (x.niveau||"")===courant; }).length;
+      h.onclick=(function(n, f){ return function(){
+        if(f) delete replies[n]; else replies[n]=1;
+        try{ ecrireLS("fa_replies", JSON.stringify(replies)); }catch(e){}
+        listerPlans();
+      }; })(courant, ferme);
+      l.appendChild(h);
+    }
+    if(ferme) return;
+    var b=document.createElement("button");
+    b.className="item"+(plan&&p.id===plan.id?" on":"");
+    b.innerHTML='<div class="n"></div><div class="t"></div><div class="d"></div>';
+    b.children[0].textContent=p.num;
+    b.children[1].textContent=p.nom;
+    b.children[2].innerHTML = (p.type==="3d" ? '<span class="b3d">3D</span>' : "")
+      + (p.date ? "PDF du "+p.date : "");
+    b.title=p.num+" — "+p.nom+(p.date?"\nPDF exporté le "+p.date:"");
+    b.onclick=function(){ ouvrir(p); if(innerWidth<=820) $("aside").classList.remove("open"); };
+    l.appendChild(b);
+  });
+}
+$("q").oninput=listerPlans;
+
+// ---------------------------------------------------------------- papier
+// Le PDF fait foi sur la taille de page. Parmi les emprises candidates
+// exportees par Revit, on retient celle dont le rapport largeur/hauteur colle
+// a la page : elle donne l'origine et l'echelle papier des fenetres.
+function calerPapier(p, ptL, ptH){
+  var cible=ptL/ptH, best=null, ecart=1e9;
+  (p.papiers||[]).forEach(function(c){
+    var m=c.mm, w=m[2]-m[0], h=m[3]-m[1];
+    if(w<=0||h<=0) return;
+    var e=Math.abs((w/h)-cible)/cible;
+    if(e<ecart){ ecart=e; best=c; }
+  });
+  if(!best){
+    p._pap={mm:[0,0,ptL*MM_PAR_PT,ptH*MM_PAR_PT],origine:"page PDF"};
+    p._ecart=0;
+  }else{
+    p._pap=best; p._ecart=ecart;
+  }
+  p._mmParPt=(p._pap.mm[2]-p._pap.mm[0])/ptL;
+  p._pt=[ptL,ptH];
+}
+// monde (points PDF, Y vers le bas) -> mm feuille Revit (Y vers le haut)
+function versMm(q){
+  return {x: plan._pap.mm[0] + q.x*plan._mmParPt,
+          y: plan._pap.mm[3] - q.y*plan._mmParPt};
+}
+
+// ---------------------------------------------------------------- ouverture
+// TRACE : sur les feuilles qui ont une vue « Impact » superposee (gabarit
+// IMPACT dans Revit), l'outil publie un 2e PDF SANS elle. `trace` dit lequel
+// afficher ; les deux ont exactement le meme format de page, donc mesures,
+// annotations et recherche restent calees quand on bascule.
+var trace = true;
+try{ trace = lireLS("fa_trace") !== "0"; }catch(e){}
+var vueGardee = null;        // cadrage a conserver pendant la bascule
+
+// Le PDF a lire pour ce plan, selon la trace demandee.
+function source(p){
+  if(!trace && p.trace && p.trace.fichier)
+    return {id:p.trace.id, fichier:p.trace.fichier, num:p.num};
+  return p;
+}
+
+function majBoutonTrace(){
+  var b = $("bTrace"), a = !!(plan && plan.trace && plan.trace.fichier);
+  b.hidden = !a;
+  b.classList.toggle("on", a && trace);
+}
+
+function basculerTrace(){
+  if(!(plan && plan.trace && plan.trace.fichier)) return;
+  trace = !trace;
+  try{ ecrireLS("fa_trace", trace ? "1" : "0"); }catch(e){}
+  // les accrochages ont ete construits sur l'autre PDF : a refaire
+  if(!plan._snapEnCours){ plan._snap = null; plan._snapKo = false; }
+  vueGardee = {zoom:zoom, panX:panX, panY:panY, auto:autoCadre};
+  ouvrir(plan, true);
+  indice(trace ? "Trace affichée" : "Trace masquée", 1800);
+}
+
+function ouvrir(p, forcer){
+  if(!forcer && plan && p && p.id===plan.id) return;
+  if(!forcer) vueGardee = null;
+  var src = source(p);
+  var mien = ++jeton;
+  plan=p; page=null; tuile=null; pts=[]; survol=null; forceEch=0;
+  curseur=null; accroche=null; refsPara=[];
+  selAnn=-1; brouillon=null; deplaceAnn=null; tourneAnn=false;
+  besoinFit=true; autoCadre=true;
+  if(tache){ try{tache.cancel()}catch(e){} tache=null; }
+  $("splash").style.display="none";
+  $("infoPlan").textContent=p.num+" — "+p.nom;
+  var jd=$("infoDate");
+  jd.hidden=!p.date; jd.className="tag";
+  jd.textContent=p.date ? "PDF du "+p.date : "";
+  listerPlans(); majSelectEchelle(); majBoutonTrace(); dessiner();
+
+  if(cache[src.id]){ page=cache[src.id].page; apresChargement(); return; }
+  indice("Chargement de "+p.num+"…",0);
+  chargerOctets(src, function(octets){
+    if(mien!==jeton) return;
+    var doc;
+    pdfjsLib.getDocument({data:octets, worker:worker()}).promise.then(function(pdf){
+    doc=pdf; return pdf.getPage(1);
+  }).then(function(pg){
+    if(mien!==jeton){ try{doc.destroy()}catch(e){} return; }
+    ranger(src.id, doc, pg); page=pg;
+    var v=pg.getViewport({scale:1});
+    calerPapier(p, v.width, v.height);
+    indice("",0); apresChargement();
+  })["catch"](function(err){
+      if(mien!==jeton) return;
+      page=null; dessiner();
+      indice("PDF illisible ("+p.num+") : "+((err&&err.message)||err),9000);
+    });
+  }, function(err){
+    if(mien!==jeton) return;
+    page=null; dessiner();
+    indice(err,9000);
+  });
+}
+
+// Un seul worker pour tout le site : en creer un par feuille les accumulait
+// jusqu'a ce que pdf.js n'arrive plus a en demarrer.
+function worker(){
+  if(!travailleur){
+    try{ travailleur = new pdfjsLib.PDFWorker({name:"francoisapp"}); }
+    catch(e){ travailleur = null; }
+  }
+  return travailleur || undefined;
+}
+
+// Garde les derniers documents ouverts et libere les plus anciens : un PDF
+// de carnet pese plusieurs Mo, on n'en empile pas cinquante.
+function ranger(id, doc, pg){
+  cache[id]={doc:doc, page:pg};
+  ordre.push(id);
+  while(ordre.length > MAX_EN_MEMOIRE){
+    var vieux=ordre.shift();
+    if(vieux===id || !cache[vieux]) continue;
+    try{ cache[vieux].doc.destroy(); }catch(e){}
+    delete cache[vieux];
+  }
+}
+
+// Charge plans/<id>.js par une balise <script> : contrairement a fetch/XHR,
+// c'est autorise quand la page est ouverte en file:// (double-clic).
+function chargerOctets(p, ok, ko){
+  // Dossier produit par une version anterieure de l'outil : les plans y sont
+  // des .pdf bruts, que file:// interdit de lire. On le dit franchement.
+  if(!/\.js$/i.test(p.fichier||"")){
+    return ko("Ces plans ont été générés par une version précédente de "+
+              "l'outil. Relancez « Visionneuse web » dans Revit sur ce dossier.");
+  }
+  function livrer(){
+    var b64=PDF[p.id];
+    delete PDF[p.id];               // libere la copie base64 (+33 % de memoire)
+    if(CLE){
+      return dechiffrer(b64).then(ok, function(){
+        ko("Plan illisible ("+p.num+") : le déchiffrement a échoué");
+      });
+    }
+    try{ ok(b64oct(b64)); }
+    catch(e){ ko("Plan illisible ("+p.num+") : fichier abime"); }
+  }
+  if(PDF[p.id]) return livrer();
+  var sc=document.createElement("script");
+  // meme raison : une feuille reexportee garde son nom de fichier
+  sc.src=p.fichier + (window.FRAIS || "");
+  sc.onload=function(){
+    sc.parentNode.removeChild(sc);
+    PDF[p.id] ? livrer() : ko("Plan vide : "+p.fichier);
+  };
+  sc.onerror=function(){
+    sc.parentNode.removeChild(sc);
+    ko("Fichier introuvable : "+p.fichier);
+  };
+  document.head.appendChild(sc);
+}
+function apresChargement(){
+  majSelectEchelle();
+  if(vueGardee){
+    // bascule de la trace : on reste exactement au meme endroit
+    zoom=vueGardee.zoom; panX=vueGardee.panX; panY=vueGardee.panY;
+    autoCadre=vueGardee.auto; besoinFit=false; vueGardee=null;
+    planifier();
+  }else ajuster();
+  // le plan a ete ouvert pour montrer un resultat de recherche : on s'y rend
+  // maintenant que sa taille de page est connue (ajuster() vient de cadrer)
+  if(sautRes && plan && sautRes.p.id === plan.id){
+    var r = sautRes; sautRes = null; cadrerSur(r);
+  }
+  // le plan vient d'arriver : si la mesure est deja active, c'est ICI que
+  // l'index d'accrochage doit se construire (le bouton a pu etre clique
+  // pendant le chargement, quand il n'y avait pas encore de page)
+  if(mesurer && accrochage) preparerAccrochage(plan, page);
+  if(plan.type==="3d"){
+    // pas d'echelle possible sur une 3D : le dire tout de suite plutot que de
+    // laisser croire a une cote juste
+    indice("Vue 3D : aucune échelle connue. Pour mesurer, tracez une cote "+
+           "connue puis choisissez « Calibrer… » à droite.",8000);
+  }else if(plan._ecart>0.02){
+    indice("Emprise de feuille incertaine sur ce plan : vérifiez une cote connue, "+
+           "sinon utilisez « Calibrer… »",7000);
+  }
+}
+
+// ---------------------------------------------------------------- vue
+function ajuster(){
+  var r=stage.getBoundingClientRect();
+  if(!page||r.width<2||r.height<2){ besoinFit=true; dessiner(); return; }
+  zoom=Math.min(r.width/plan._pt[0], r.height/plan._pt[1])*0.97;
+  panX=(r.width-plan._pt[0]*zoom)/2;
+  panY=(r.height-plan._pt[1]*zoom)/2;
+  besoinFit=false;
+  planifier();
+}
+function cadrer(){ autoCadre=true; ajuster(); }
+function versEcran(q){ return {x:q.x*zoom+panX, y:q.y*zoom+panY}; }
+function versMonde(x,y){ return {x:(x-panX)/zoom, y:(y-panY)/zoom}; }
+
+function zoomer(f,cx,cy){
+  var r=stage.getBoundingClientRect();
+  if(cx===undefined){ cx=r.width/2; cy=r.height/2; }
+  var av=versMonde(cx,cy);
+  besoinFit=false; autoCadre=false;
+  zoom=Math.max(0.002,Math.min(400,zoom*f));
+  panX=cx-av.x*zoom; panY=cy-av.y*zoom;
+  planifier();
+}
+
+// ---------------------------------------------------------------- rendu PDF
+// On ne rasterise QUE la region visible : une feuille de 33 m coute le meme
+// prix qu'un A3. Pendant les manipulations on etire la derniere tuile (fluide),
+// puis on refait un rendu net des que la main s'arrete.
+function planifier(){
+  dessiner();
+  clearTimeout(minuteur);
+  minuteur=setTimeout(rendu,110);
+}
+
+function rendu(){
+  if(!page) return;
+  var r=stage.getBoundingClientRect();
+  if(r.width<2||r.height<2) return;
+  if(tache){ try{tache.cancel()}catch(e){} tache=null; }
+
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  var w=Math.max(1,Math.round(r.width*dpr)), h=Math.max(1,Math.round(r.height*dpr));
+  var zi=zoom, pxi=panX, pyi=panY, mien=jeton;
+
+  var off=document.createElement("canvas");
+  off.width=w; off.height=h;
+  tache=page.render({
+    canvasContext: off.getContext("2d"),
+    viewport: page.getViewport({scale:zi*dpr}),
+    transform: [1,0,0,1, pxi*dpr, pyi*dpr],
+    background: "rgba(0,0,0,0)"
+  });
+  tache.promise.then(function(){
+    if(mien!==jeton) return;
+    // Hors de la page (gros numero de folio au-dessus des cartouches d'un
+    // carnet) le trait noir tombe sur le fond sombre : on en garde une copie
+    // passee en BLANC, dessinee seulement en dehors de la page.
+    var bl=document.createElement("canvas");
+    bl.width=w; bl.height=h;
+    var bc=bl.getContext("2d");
+    bc.drawImage(off,0,0);
+    bc.globalCompositeOperation="source-in";
+    bc.fillStyle="#fff"; bc.fillRect(0,0,w,h);
+    tuile={cv:off, blanc:bl, zoom:zi, panX:pxi, panY:pyi, dpr:dpr};
+    dessiner();
+  })["catch"](function(){ /* rendu annule pendant une manipulation : normal */ });
+}
+
+function tailleCanvas(){
+  var r=stage.getBoundingClientRect(), d=Math.min(window.devicePixelRatio||1,2);
+  cv.width=Math.max(1,Math.round(r.width*d));
+  cv.height=Math.max(1,Math.round(r.height*d));
+  ctx.setTransform(d,0,0,d,0,0);
+  return r;
+}
+
+function dessiner(){
+  var r=tailleCanvas();
+  ctx.clearRect(0,0,r.width,r.height);
+
+  if(!page){
+    if(plan){
+      ctx.fillStyle="#98a3b1"; ctx.font="13px 'Segoe UI',sans-serif"; ctx.textAlign="center";
+      ctx.fillText("Chargement…",r.width/2,r.height/2);
+    }
+    majBarre(); return;
+  }
+
+  ctx.save();
+  ctx.shadowColor="rgba(0,0,0,.45)"; ctx.shadowBlur=16; ctx.shadowOffsetY=3;
+  ctx.fillStyle="#fff";
+  ctx.fillRect(panX,panY,plan._pt[0]*zoom,plan._pt[1]*zoom);
+  ctx.restore();
+
+  if(tuile){
+    var k=zoom/tuile.zoom;
+    var s=versEcran({x:(0-tuile.panX)/tuile.zoom, y:(0-tuile.panY)/tuile.zoom});
+    var tw=tuile.cv.width/tuile.dpr*k, th=tuile.cv.height/tuile.dpr*k;
+    var pw=plan._pt[0]*zoom, ph=plan._pt[1]*zoom;
+    ctx.imageSmoothingEnabled=true; ctx.imageSmoothingQuality="high";
+    ctx.save();
+    ctx.beginPath(); ctx.rect(panX,panY,pw,ph); ctx.clip();
+    ctx.drawImage(tuile.cv, s.x, s.y, tw, th);
+    ctx.restore();
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,0,r.width,r.height); ctx.rect(panX,panY,pw,ph);
+    ctx.clip("evenodd");
+    ctx.drawImage(tuile.blanc, s.x, s.y, tw, th);
+    ctx.restore();
+  }
+
+  dessinerReperes();
+  dessinerAnnots();
+  dessinerTrouves();
+
+  var liste=(mesures[plan.id]||[]).slice();
+  if(pts.length===1 && survol) liste.push({a:pts[0],b:survol,live:true});
+  liste.forEach(traceMesure);
+  if(pts.length===1){
+    var q=versEcran(pts[0]);
+    ctx.fillStyle="#4fa8ff"; ctx.beginPath(); ctx.arc(q.x,q.y,4,0,6.284); ctx.fill();
+  }
+  if(mesurer && accroche) marqueAccroche(ctx, accroche);
+  majBarre();
+}
+
+// ------------------------------------------------------ reperes de folio
+// Gros chiffre au-dessus de chaque cartouche des carnets (textes REPFOL- de
+// Revit). Retirés du PDF à l'export : dessinés ICI, à l'écran seulement, donc
+// jamais imprimés ni enregistrés. Souvent hors de la page (au-dessus) : trait
+// sombre cerné de blanc, lisible sur la page comme sur le fond.
+function dessinerReperes(){
+  var l = plan.reperes, k = plan._mmParPt;
+  if(!l || !l.length || !k || !plan._pap) return;
+  var m = plan._pap.mm;
+  ctx.save();
+  ctx.textBaseline = "middle"; ctx.lineJoin = "round";
+  l.forEach(function(r){
+    var c = r.rect_mm, hmm = r.h_mm || (c[3] - c[1]);
+    var px = hmm / 0.72 / k * zoom;           // corps de police ~ hauteur / 0,72
+    if(px < 4) return;
+    ctx.font = px.toFixed(1) + "px Arial,sans-serif";
+    // renvoi à la ligne sur la largeur de la zone de texte Revit
+    // La police du navigateur n'a pas la chasse de celle de Revit : on vise le
+    // NOMBRE de lignes que Revit affiche (hauteur de l'emprise / interligne,
+    // 1,676 x la taille du texte pour une ligne), quitte à élargir la coupure
+    // puis à réduire le corps si une ligne déborde de la zone de texte.
+    var largPx = (r.larg_mm || 0) / k * zoom, hautPx = (c[3] - c[1]) / k * zoom;
+    var nRevit = Math.max(1, Math.round((c[3] - c[1]) / (1.676 * hmm)));
+    var pars = String(r.txt).split(/\r\n|[\r\n\v]/);   // \v = Maj+Entrée Revit
+    function couper(lim){
+      var out = [];
+      pars.forEach(function(par){
+        var mots = par.split(/\s+/).filter(Boolean), cour = "";
+        mots.forEach(function(w){
+          var t = cour ? cour + " " + w : w;
+          if(cour && lim > 0 && ctx.measureText(t).width > lim){
+            out.push(cour); cour = w;
+          }else cour = t;
+        });
+        out.push(cour);
+      });
+      return out;
+    }
+    var lim = largPx, lignes = couper(lim);
+    while(largPx > 0 && lignes.length > Math.max(nRevit, pars.length) && lim < largPx * 3){
+      lim *= 1.05; lignes = couper(lim);
+    }
+    var wMax = 0;
+    lignes.forEach(function(t){ wMax = Math.max(wMax, ctx.measureText(t).width); });
+    if(largPx > 0 && wMax > largPx){
+      px *= largPx / wMax; ctx.font = px.toFixed(1) + "px Arial,sans-serif";
+    }
+    // bloc de lignes centré dans l'emprise Revit, ligne à ligne
+    var al = r.align || "c";
+    ctx.textAlign = al === "g" ? "left" : al === "d" ? "right" : "center";
+    var xmm = al === "g" ? c[0] : al === "d" ? c[2] : (c[0] + c[2]) / 2;
+    var pas = Math.min(px * 1.3, hautPx / lignes.length);
+    var q = versEcran({x:(xmm - m[0]) / k, y:(m[3] - (c[1] + c[3]) / 2) / k});
+    var y0 = q.y - pas * (lignes.length - 1) / 2;
+    ctx.lineWidth = Math.max(2, px * 0.08);
+    lignes.forEach(function(t, i){
+      ctx.strokeStyle = "rgba(255,255,255,.9)"; ctx.strokeText(t, q.x, y0 + i * pas);
+      ctx.fillStyle = "#1b1f24"; ctx.fillText(t, q.x, y0 + i * pas);
+    });
+  });
+  ctx.restore();
+}
+
+// ---------------------------------------------------------------- echelles
+function vuesDuPlan(){ return (plan&&plan.vues)||[]; }
+
+function echelleEn(mm){
+  var best=null,aire=Infinity;
+  vuesDuPlan().forEach(function(v){
+    var r=v.rect_mm;
+    if(mm.x>=r[0]&&mm.x<=r[2]&&mm.y>=r[1]&&mm.y<=r[3]){
+      var a=(r[2]-r[0])*(r[3]-r[1]);
+      if(a<aire){aire=a;best=v;}
+    }
+  });
+  return best;
+}
+function echellePour(a,b){
+  if(forceEch) return {nom:"choix manuel",echelle:forceEch,manuel:true};
+  if(calib[plan.id]) return {nom:"calibrée",echelle:calib[plan.id],calib:true};
+  var ma=versMm(a), mb=versMm(b);
+  var v=echelleEn({x:(ma.x+mb.x)/2,y:(ma.y+mb.y)/2})||echelleEn(ma)||echelleEn(mb);
+  if(v) return {nom:v.nom,echelle:v.echelle};
+  var vs=vuesDuPlan();
+  if(vs.length===1) return {nom:vs[0].nom,echelle:vs[0].echelle};
+  return null;
+}
+function majSelectEchelle(){
+  var s=$("selEch"); s.innerHTML="";
+  var o=document.createElement("option");
+  o.value="0"; o.textContent="Échelle : auto"; s.appendChild(o);
+  var vus={};
+  vuesDuPlan().forEach(function(v){ vus[v.echelle]=1; });
+  Object.keys(vus).map(Number).sort(function(a,b){return a-b}).forEach(function(e){
+    var x=document.createElement("option");
+    x.value=String(e); x.textContent="Forcer 1:"+e; s.appendChild(x);
+  });
+  [20,25,50,100,200].forEach(function(e){
+    if(vus[e]) return;
+    var x=document.createElement("option");
+    x.value=String(e); x.textContent="Forcer 1:"+e; s.appendChild(x);
+  });
+  var c=document.createElement("option");
+  c.value="cal"; c.textContent=(plan&&calib[plan.id])?"Recalibrer…":"Calibrer…";
+  s.appendChild(c);
+  s.value="0";
+}
+$("selEch").onchange=function(){
+  if(this.value==="cal"){ this.value=String(forceEch||0); lancerCalibration(); return; }
+  forceEch=Number(this.value)||0;
+  if(forceEch && plan) delete calib[plan.id];
+  sauver(); dessiner();
+};
+
+// ---------------------------------------------------------------- distances
+function mmReels(a,b){
+  if(!plan||!plan._mmParPt) return null;
+  var mmFeuille=Math.hypot(b.x-a.x,b.y-a.y)*plan._mmParPt;
+  var e=echellePour(a,b);
+  if(!e) return {mmFeuille:mmFeuille,mm:null,src:null};
+  return {mmFeuille:mmFeuille, mm:mmFeuille*e.echelle, src:e};
+}
+function fmt(mm){
+  if(mm===null||mm===undefined) return "—";
+  if(unite==="mm") return Math.round(mm).toLocaleString("fr-FR")+" mm";
+  if(unite==="cm") return (mm/10).toLocaleString("fr-FR",{minimumFractionDigits:1,maximumFractionDigits:1})+" cm";
+  return (mm/1000).toLocaleString("fr-FR",{minimumFractionDigits:3,maximumFractionDigits:3})+" m";
+}
+$("selUnit").onchange=function(){ unite=this.value; sauver(); dessiner(); };
+
+function traceMesure(m){
+  var a=versEcran(m.a), b=versEcran(m.b);
+  var d=mmReels(m.a,m.b), coul=m.live?"#4fa8ff":"#ff5c5c";
+  ctx.save();
+  ctx.lineWidth=2; ctx.strokeStyle=coul; ctx.setLineDash(m.live?[6,4]:[]);
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  ctx.setLineDash([]);
+  var ang=Math.atan2(b.y-a.y,b.x-a.x), L=7;
+  [a,b].forEach(function(q){
+    ctx.beginPath();
+    ctx.moveTo(q.x-Math.sin(ang)*L,q.y+Math.cos(ang)*L);
+    ctx.lineTo(q.x+Math.sin(ang)*L,q.y-Math.cos(ang)*L);
+    ctx.stroke();
+  });
+  var txt=d?fmt(d.mm!==null?d.mm:d.mmFeuille):"—";
+  if(d && d.mm===null) txt+=" (feuille)";
+  ctx.font="600 13px 'Segoe UI',sans-serif";
+  var w=ctx.measureText(txt).width, mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  ctx.fillStyle="rgba(255,255,255,.94)"; ctx.strokeStyle=coul; ctx.lineWidth=1.5;
+  var rx=mx-w/2-7, ry=my-21;
+  ctx.beginPath();
+  if(ctx.roundRect) ctx.roundRect(rx,ry,w+14,22,5); else ctx.rect(rx,ry,w+14,22);
+  ctx.fill(); ctx.stroke();
+  ctx.fillStyle="#16202b"; ctx.textAlign="center"; ctx.textBaseline="middle";
+  ctx.fillText(txt,mx,ry+11);
+  ctx.restore();
+}
+
+function majBarre(){
+  $("zoomval").textContent = page ? Math.round(zoom*100)+" %" : "—";
+  var t=$("infoEch");
+  if(!plan){ t.hidden=true; $("infoMes").textContent="—"; return; }
+  var last=(mesures[plan.id]||[]).slice(-1)[0];
+  var ref=last || (pts.length===1&&survol?{a:pts[0],b:survol}:null);
+  if(ref){
+    var d=mmReels(ref.a,ref.b);
+    if(d && d.mm!==null){
+      $("infoMes").innerHTML="Dernière mesure : <b>"+fmt(d.mm)+"</b>"+
+        "  <span style='color:#98a3b1'>(sur feuille "+d.mmFeuille.toFixed(1)+" mm)</span>";
+    }else{
+      $("infoMes").innerHTML="Dernière mesure : <b>"+(d?d.mmFeuille.toFixed(1)+" mm sur feuille":"—")+"</b>";
+    }
+    if(d && d.src){
+      t.hidden=false; t.className="tag"+(d.src.manuel||d.src.calib?" w":"");
+      t.textContent="1:"+Math.round(d.src.echelle)+" · "+d.src.nom;
+    }else{
+      t.hidden=false; t.className="tag w";
+      t.textContent="échelle inconnue ici — choisissez-la à droite";
+    }
+  }else{
+    $("infoMes").textContent=(mesures[plan.id]||[]).length?"":"Cliquez « Mesurer » puis 2 points";
+    var vs=vuesDuPlan();
+    if(vs.length){ t.hidden=false; t.className="tag";
+      t.textContent=vs.length+" vue"+(vs.length>1?"s":"")+" · échelle auto"; }
+    else{ t.hidden=false; t.className="tag w"; t.textContent="aucune échelle connue — calibrez"; }
+  }
+}
+
+function indice(txt,ms){
+  var h=$("hint");
+  if(!txt){ h.classList.remove("show"); return; }
+  h.textContent=txt; h.classList.add("show");
+  clearTimeout(h._t);
+  if(ms) h._t=setTimeout(function(){h.classList.remove("show")},ms);
+}
+
+// ---------------------------------------------------------------- accrochages
+// On relit la GEOMETRIE du PDF (pas les pixels) : pdf.js expose la liste des
+// operateurs de dessin. On en tire les segments, dans le meme repere que la
+// mesure, puis on accroche le curseur aux extremites, aux intersections et
+// aux traits. C'est ce qui permet de mesurer une cote exacte au lieu d'un
+// « a peu pres la ».
+var accrochage = true;
+var curseur = null;          // position brute du curseur (monde)
+var accroche = null;         // point accroche retenu {x,y,type}
+var RAYON = 14;              // rayon d'accrochage, en pixels ecran
+var CASES_MAX = 60;          // au-dela, un segment va dans la liste "longs"
+var SEGMENTS_MAX = 600000;   // garde-fou memoire
+
+function ptsChemin(segs, ops, co, m, U, O){
+  var k = 0, cur = null, debut = null;
+  function pt(x, y){ return U.applyTransform([x, y], m); }
+  for(var j=0;j<ops.length;j++){
+    var q;
+    switch(ops[j]){
+      case O.moveTo:
+        cur = pt(co[k], co[k+1]); debut = cur; k += 2; break;
+      case O.lineTo:
+        q = pt(co[k], co[k+1]); k += 2;
+        if(cur) segs.push(cur[0],cur[1],q[0],q[1]);
+        cur = q; break;
+      case O.curveTo:            // corde : suffisant pour accrocher
+        q = pt(co[k+4], co[k+5]); k += 6;
+        if(cur) segs.push(cur[0],cur[1],q[0],q[1]);
+        cur = q; break;
+      case O.curveTo2:
+      case O.curveTo3:
+        q = pt(co[k+2], co[k+3]); k += 4;
+        if(cur) segs.push(cur[0],cur[1],q[0],q[1]);
+        cur = q; break;
+      case O.closePath:
+        if(cur && debut) segs.push(cur[0],cur[1],debut[0],debut[1]);
+        cur = debut; break;
+      case O.rectangle: {
+        var x=co[k], y=co[k+1], w=co[k+2], h=co[k+3]; k += 4;
+        var a=pt(x,y), b=pt(x+w,y), c=pt(x+w,y+h), d=pt(x,y+h);
+        segs.push(a[0],a[1],b[0],b[1], b[0],b[1],c[0],c[1],
+                  c[0],c[1],d[0],d[1], d[0],d[1],a[0],a[1]);
+        cur = a; debut = a; break; }
+    }
+  }
+}
+
+function segmentsDuPdf(liste, vp){
+  var O = pdfjsLib.OPS, U = pdfjsLib.Util;
+  var ctm = [1,0,0,1,0,0], pile = [], segs = [];
+  var fn = liste.fnArray, ar = liste.argsArray;
+  for(var i=0;i<fn.length && segs.length < SEGMENTS_MAX*4;i++){
+    var f = fn[i];
+    if(f === O.save) pile.push(ctm);
+    else if(f === O.restore) ctm = pile.pop() || [1,0,0,1,0,0];
+    else if(f === O.transform) ctm = U.transform(ctm, ar[i]);
+    else if(f === O.constructPath)
+      ptsChemin(segs, ar[i][0], ar[i][1], U.transform(vp.transform, ctm), U, O);
+  }
+  return segs;
+}
+
+// Index par cases : trouver les segments proches du curseur sans parcourir
+// les centaines de milliers de traits d'un carnet.
+function construireIndex(tab){
+  var n = tab.length / 4;
+  if(!n) return null;
+  var segs = new Float64Array(tab);
+  var x0=Infinity, y0=Infinity, x1=-Infinity, y1=-Infinity;
+  for(var i=0;i<segs.length;i+=2){
+    if(segs[i]<x0) x0=segs[i];   if(segs[i]>x1) x1=segs[i];
+    if(segs[i+1]<y0) y0=segs[i+1]; if(segs[i+1]>y1) y1=segs[i+1];
+  }
+  var aire = Math.max(1,x1-x0) * Math.max(1,y1-y0);
+  var cote = Math.max(2, Math.sqrt(aire * 4 / n));     // ~4 segments par case
+  var g = new Map(), longs = [];
+  for(var s=0;s<n;s++){
+    var ax=segs[4*s], ay=segs[4*s+1], bx=segs[4*s+2], by=segs[4*s+3];
+    var i0=Math.floor(Math.min(ax,bx)/cote), i1=Math.floor(Math.max(ax,bx)/cote);
+    var j0=Math.floor(Math.min(ay,by)/cote), j1=Math.floor(Math.max(ay,by)/cote);
+    if((i1-i0+1)*(j1-j0+1) > CASES_MAX){ longs.push(s); continue; }
+    for(var a=i0;a<=i1;a++) for(var b=j0;b<=j1;b++){
+      var c=a+","+b, t=g.get(c);
+      if(!t) g.set(c, t=[]);
+      t.push(s);
+    }
+  }
+  return {segs:segs, n:n, cote:cote, g:g, longs:longs};
+}
+
+function candidats(ix, q, r){
+  var out = ix.longs.slice(), vus = {};
+  var i0=Math.floor((q.x-r)/ix.cote), i1=Math.floor((q.x+r)/ix.cote);
+  var j0=Math.floor((q.y-r)/ix.cote), j1=Math.floor((q.y+r)/ix.cote);
+  for(var a=i0;a<=i1;a++) for(var b=j0;b<=j1;b++){
+    var t = ix.g.get(a+","+b);
+    if(!t) continue;
+    for(var k=0;k<t.length;k++){
+      var s=t[k];
+      if(!vus[s]){ vus[s]=1; out.push(s); }
+    }
+  }
+  return out;
+}
+
+function surSegment(ax,ay,bx,by,qx,qy){
+  var dx=bx-ax, dy=by-ay, L=dx*dx+dy*dy;
+  if(L < 1e-12) return {x:ax, y:ay, d:Math.hypot(qx-ax, qy-ay)};
+  var t = ((qx-ax)*dx + (qy-ay)*dy) / L;
+  t = t<0?0:(t>1?1:t);
+  var px=ax+t*dx, py=ay+t*dy;
+  return {x:px, y:py, d:Math.hypot(qx-px, qy-py)};
+}
+
+function croisement(ax,ay,bx,by,cx,cy,dx,dy){
+  var r1x=bx-ax, r1y=by-ay, r2x=dx-cx, r2y=dy-cy;
+  var den = r1x*r2y - r1y*r2x;
+  if(Math.abs(den) < 1e-9) return null;              // paralleles
+  var t = ((cx-ax)*r2y - (cy-ay)*r2x) / den;
+  var u = ((cx-ax)*r1y - (cy-ay)*r1x) / den;
+  if(t<-0.001||t>1.001||u<-0.001||u>1.001) return null;
+  return {x:ax+t*r1x, y:ay+t*r1y};
+}
+
+// Tolerance du parallele : 2,5 degres. Assez large pour l'attraper a la
+// souris, assez fin pour que la cote reste juste.
+var COS_PARA = Math.cos(2.5 * Math.PI / 180);
+
+// Directions ACQUISES : tout trait qu'on vient de survoler devient une
+// reference possible pour le parallele (3 dernieres, comme AutoCAD).
+var refsPara = [];
+function noterRef(ix, s){
+  var dx = ix.segs[4*s+2]-ix.segs[4*s], dy = ix.segs[4*s+3]-ix.segs[4*s+1];
+  var l = Math.hypot(dx, dy);
+  if(l < 1e-6) return;
+  dx /= l; dy /= l;
+  for(var i=0;i<refsPara.length;i++)                 // deja connue ?
+    if(Math.abs(refsPara[i].dx*dx + refsPara[i].dy*dy) > 0.9999) return;
+  refsPara.unshift({dx:dx, dy:dy});
+  if(refsPara.length > 3) refsPara.pop();
+}
+
+function accrocheParallele(q, depart){
+  if(!depart) return null;
+  var vx = q.x - depart.x, vy = q.y - depart.y, L = Math.hypot(vx, vy);
+  if(L < 1e-6) return null;
+  var mieux = null;
+  for(var i=0;i<refsPara.length;i++){
+    var R = refsPara[i];
+    var cos = Math.abs((vx*R.dx + vy*R.dy) / L);      // direction non orientee
+    if(cos > COS_PARA && (!mieux || cos > mieux.cos))
+      mieux = {cos:cos, dx:R.dx, dy:R.dy};
+  }
+  if(!mieux) return null;
+  var t = vx*mieux.dx + vy*mieux.dy;                  // projection sur la droite
+  return {x: depart.x + t*mieux.dx, y: depart.y + t*mieux.dy,
+          d: 0, type: "parallèle"};
+}
+
+// Priorite : extremite, milieu, intersection, sur le trait, puis parallele.
+function accrocherPoint(q, depart){
+  var ix = plan && plan._snap;
+  if(!accrochage || !ix || !q) return null;
+  var r = RAYON / zoom;
+  var cand = candidats(ix, q, r), S = ix.segs;
+  var i, s, d, best = null;
+
+  // 1. extremites
+  for(i=0;i<cand.length;i++){
+    s = cand[i];
+    for(var e=0;e<2;e++){
+      var ex=S[4*s+2*e], ey=S[4*s+2*e+1];
+      d = Math.hypot(q.x-ex, q.y-ey);
+      if(d < r && (!best || d < best.d))
+        best = {x:ex, y:ey, d:d, type:"extrémité", seg:s};
+    }
+  }
+  if(best){ noterRef(ix, best.seg); return best; }
+
+  // 2. milieux
+  for(i=0;i<cand.length;i++){
+    s = cand[i];
+    var mx=(S[4*s]+S[4*s+2])/2, my=(S[4*s+1]+S[4*s+3])/2;
+    d = Math.hypot(q.x-mx, q.y-my);
+    if(d < r && (!best || d < best.d))
+      best = {x:mx, y:my, d:d, type:"milieu", seg:s};
+  }
+  if(best){ noterRef(ix, best.seg); return best; }
+
+  // 3. segments sous le curseur
+  var proches = [];
+  for(i=0;i<cand.length;i++){
+    s = cand[i];
+    var pr = surSegment(S[4*s],S[4*s+1],S[4*s+2],S[4*s+3], q.x, q.y);
+    if(pr.d < r) proches.push({s:s, pr:pr});
+  }
+  proches.sort(function(a,b){ return a.pr.d - b.pr.d; });
+  // rien sous le curseur : reste le parallele, qui travaille dans le vide
+  if(!proches.length) return accrocheParallele(q, depart);
+
+  // 4. intersections
+  var lot = proches.slice(0, 24);
+  for(i=0;i<lot.length;i++) for(var j=i+1;j<lot.length;j++){
+    var A=lot[i].s, B=lot[j].s;
+    var x = croisement(S[4*A],S[4*A+1],S[4*A+2],S[4*A+3],
+                       S[4*B],S[4*B+1],S[4*B+2],S[4*B+3]);
+    if(!x) continue;
+    d = Math.hypot(q.x-x.x, q.y-x.y);
+    if(d < r && (!best || d < best.d))
+      best = {x:x.x, y:x.y, d:d, type:"intersection", seg:A, seg2:B};
+  }
+  if(best){ noterRef(ix, best.seg); noterRef(ix, best.seg2); return best; }
+
+  // 5. sur le trait
+  var m = lot[0].pr;
+  noterRef(ix, lot[0].s);
+  return {x:m.x, y:m.y, d:m.d, type:"sur le trait", seg:lot[0].s};
+}
+
+// L'index n'est construit qu'a la premiere mesure : inutile de le payer sur
+// une feuille qu'on ne fait que regarder.
+function preparerAccrochage(p, pg){
+  if(p._snap || p._snapEnCours || p._snapKo) return;
+  p._snapEnCours = true;
+  indice("Préparation des accrochages…", 0);
+  pg.getOperatorList().then(function(liste){
+    try{
+      var vp = pg.getViewport({scale:1});
+      p._snap = construireIndex(segmentsDuPdf(liste, vp));
+      if(!p._snap) p._snapKo = true;
+    }catch(e){ p._snapKo = true; }
+    p._snapEnCours = false;
+    indice(p._snapKo ? "Accrochages indisponibles sur ce plan" : "",
+           p._snapKo ? 4000 : 0);
+    dessiner();
+  })["catch"](function(){
+    p._snapKo = true; p._snapEnCours = false;
+    indice("Accrochages indisponibles sur ce plan", 4000);
+  });
+}
+
+function marqueAccroche(ctx, a){
+  var s = versEcran(a), t = 6, T = a.type;
+  ctx.save();
+  ctx.lineWidth = 2; ctx.strokeStyle = "#12b886";
+  ctx.beginPath();
+  if(T === "extrémité") ctx.rect(s.x-t, s.y-t, 2*t, 2*t);
+  else if(T === "milieu"){                       // triangle, comme AutoCAD
+    ctx.moveTo(s.x-t, s.y+t); ctx.lineTo(s.x+t, s.y+t);
+    ctx.lineTo(s.x, s.y-t); ctx.closePath();
+  }else if(T === "intersection"){
+    ctx.moveTo(s.x-t, s.y-t); ctx.lineTo(s.x+t, s.y+t);
+    ctx.moveTo(s.x+t, s.y-t); ctx.lineTo(s.x-t, s.y+t);
+  }else if(T === "parallèle"){                   // les deux barres du signe //
+    ctx.moveTo(s.x-t+2, s.y+t); ctx.lineTo(s.x+2, s.y-t);
+    ctx.moveTo(s.x-2, s.y+t);   ctx.lineTo(s.x+t-2, s.y-t);
+  }else{                                         // sur le trait : sablier
+    ctx.moveTo(s.x-t, s.y-t); ctx.lineTo(s.x+t, s.y-t);
+    ctx.lineTo(s.x-t, s.y+t); ctx.lineTo(s.x+t, s.y+t); ctx.closePath();
+  }
+  ctx.stroke();
+  // le nom du mode : sans lui, on ne sait pas a quoi on vient de s'accrocher
+  ctx.font = "11px 'Segoe UI',sans-serif"; ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.lineWidth = 3; ctx.strokeStyle = "rgba(20,23,27,.85)";
+  ctx.strokeText(T, s.x + t + 5, s.y - t - 2);
+  ctx.fillStyle = "#12b886";
+  ctx.fillText(T, s.x + t + 5, s.y - t - 2);
+  ctx.restore();
+}
+
+// -------------------------------------------------------------- annotations
+// Commentaires poses PAR-DESSUS le plan, facon Acrobat : rien ne remonte vers
+// la maquette. Les objets sont stockes en coordonnees PAPIER (points PDF),
+// donc ils restent colles au dessin a tous les zooms -- et se gravent tels
+// quels dans le PDF a l'enregistrement.
+//
+// Les EPAISSEURS et TAILLES sont converties en points AU MOMENT du trace,
+// d'apres le zoom courant : ce qu'on voit a l'ecran est ce qu'on obtient au
+// papier. Sans cela, un texte de 12 pt serait illisible sur un carnet de 33 m.
+// annots est declare plus haut, avec les mesures
+var outil = null;                // null = pas en mode annotation
+var couleurA = "#e03131", epaisA = 1, tailleA = 1, pleinA = false;
+var selAnn = -1, brouillon = null, deplaceAnn = null, tourneAnn = false;
+
+var COULEURS = ["#e03131","#f76707","#2f9e44","#1971c2","#9c36b5","#000000"];
+var EPAIS_PX = [1.5, 3, 6];      // a l'ecran, au moment du trace
+var TAILLE_PX = [14, 22, 34];
+
+function annotsDuPlan(){
+  if(!plan) return [];
+  if(!annots[plan.id]) annots[plan.id] = [];
+  return annots[plan.id];
+}
+
+// --------------------------------------------------------------- geometrie
+function boiteTexte(a){
+  // largeur mesuree avec la police reelle, en unites PAPIER
+  ctx.save();
+  ctx.font = a.taille + "px 'Segoe UI',sans-serif";
+  var l = ctx.measureText(a.txt || "").width;
+  ctx.restore();
+  return {l: l, h: a.taille * 1.25};
+}
+
+function coinsTexte(a){
+  var b = boiteTexte(a), m = a.taille * 0.35;
+  var c = Math.cos(a.angle || 0), s = Math.sin(a.angle || 0);
+  var pts = [[-m, -b.h], [b.l + m, -b.h], [b.l + m, m], [-m, m]];
+  return pts.map(function(p){
+    return {x: a.p.x + p[0]*c - p[1]*s, y: a.p.y + p[0]*s + p[1]*c};
+  });
+}
+
+function centreDe(a){
+  if(a.type === "texte" || a.type === "bulle") return a.p;
+  return {x: (a.a.x + a.b.x)/2, y: (a.a.y + a.b.y)/2};
+}
+
+// ramene un point dans le repere propre de l'objet (rotation annulee)
+function versLocal(q, c, ang){
+  if(!ang) return q;
+  var dx = q.x - c.x, dy = q.y - c.y, co = Math.cos(-ang), si = Math.sin(-ang);
+  return {x: c.x + dx*co - dy*si, y: c.y + dx*si + dy*co};
+}
+
+function tournerAutour(p, c, ang){
+  var dx = p.x - c.x, dy = p.y - c.y, co = Math.cos(ang), si = Math.sin(ang);
+  return {x: c.x + dx*co - dy*si, y: c.y + dx*si + dy*co};
+}
+
+// angle courant : porte par l'objet, ou par la direction du trait
+function angleDe(a){
+  if(a.type === "trait" || a.type === "fleche")
+    return Math.atan2(a.b.y - a.a.y, a.b.x - a.a.x);
+  return a.angle || 0;
+}
+
+function dansPolygone(q, pts){
+  var d = false;
+  for(var i=0, j=pts.length-1; i<pts.length; j=i++){
+    if((pts[i].y > q.y) !== (pts[j].y > q.y) &&
+       q.x < (pts[j].x - pts[i].x) * (q.y - pts[i].y) / (pts[j].y - pts[i].y) + pts[i].x)
+      d = !d;
+  }
+  return d;
+}
+
+function prochePoint(q, a, b, tol){
+  return surSegment(a.x, a.y, b.x, b.y, q.x, q.y).d <= tol;
+}
+
+// quel objet se trouve sous le curseur ? (du dernier pose au premier)
+function annotSous(q){
+  var liste = annotsDuPlan(), tol = 8 / zoom;
+  for(var i = liste.length - 1; i >= 0; i--){
+    var a = liste[i], t = Math.max(tol, (a.ep || 1) * 1.5);
+    if(a.type === "fleche" || a.type === "trait"){
+      if(prochePoint(q, a.a, a.b, t)) return i;
+    }else if(a.type === "rect"){
+      var ql = versLocal(q, centreDe(a), a.angle || 0);
+      var x0=Math.min(a.a.x,a.b.x), x1=Math.max(a.a.x,a.b.x);
+      var y0=Math.min(a.a.y,a.b.y), y1=Math.max(a.a.y,a.b.y);
+      if(a.plein){
+        if(ql.x>=x0-t && ql.x<=x1+t && ql.y>=y0-t && ql.y<=y1+t) return i;
+      }else{
+        var c=[{x:x0,y:y0},{x:x1,y:y0},{x:x1,y:y1},{x:x0,y:y1}];
+        for(var k=0;k<4;k++) if(prochePoint(ql,c[k],c[(k+1)%4],t)) return i;
+      }
+    }else if(a.type === "ellipse"){
+      var qe = versLocal(q, centreDe(a), a.angle || 0);
+      var rx=Math.abs(a.b.x-a.a.x)/2, ry=Math.abs(a.b.y-a.a.y)/2;
+      var cx=(a.a.x+a.b.x)/2, cy=(a.a.y+a.b.y)/2;
+      if(rx<1e-6||ry<1e-6) continue;
+      var d = Math.sqrt(Math.pow((qe.x-cx)/rx,2) + Math.pow((qe.y-cy)/ry,2));
+      if(a.plein ? d <= 1 + t/Math.max(rx,ry)
+                 : Math.abs(d - 1) <= t/Math.min(rx,ry)) return i;
+    }else if(a.type === "texte" || a.type === "bulle"){
+      if(dansPolygone(q, coinsTexte(a))) return i;
+      if(a.type === "bulle" && prochePoint(q, a.a, a.p, t)) return i;
+    }
+  }
+  return -1;
+}
+
+// poignee de rotation d'un texte : au-dessus de la boite, a 22 px ecran
+function poigneeDe(a){
+  if(!a) return null;
+  if(a.type === "texte" || a.type === "bulle"){
+    var b = boiteTexte(a), d = b.h + 22 / zoom;
+    var c = Math.cos(a.angle || 0), s = Math.sin(a.angle || 0);
+    var lx = b.l / 2, ly = -d;
+    return {x: a.p.x + lx*c - ly*s, y: a.p.y + lx*s + ly*c};
+  }
+  // pour les formes : au-dessus du centre, perpendiculairement a l'objet
+  var ce = centreDe(a);
+  var r = (a.type === "trait" || a.type === "fleche")
+        ? Math.hypot(a.b.x-a.a.x, a.b.y-a.a.y) / 2
+        : Math.abs(a.b.y - a.a.y) / 2;
+  return tournerAutour({x: ce.x, y: ce.y - r - 22/zoom}, ce, angleDe(a));
+}
+
+// --------------------------------------------------------------- rendu
+function fleche(c, a, b, ep){
+  c.beginPath(); c.moveTo(a.x, a.y); c.lineTo(b.x, b.y); c.stroke();
+  var an = Math.atan2(b.y - a.y, b.x - a.x), L = Math.max(9, ep * 3.5), o = 0.42;
+  c.beginPath();
+  c.moveTo(b.x - L*Math.cos(an - o), b.y - L*Math.sin(an - o));
+  c.lineTo(b.x, b.y);
+  c.lineTo(b.x - L*Math.cos(an + o), b.y - L*Math.sin(an + o));
+  c.stroke();
+}
+
+function traceAnnot(a, choisi){
+  var A = versEcran(a.a || a.p), B = a.b ? versEcran(a.b) : null;
+  var ep = Math.max(1, (a.ep || 1) * zoom);
+  ctx.save();
+  ctx.strokeStyle = a.couleur; ctx.fillStyle = a.couleur;
+  ctx.lineWidth = ep; ctx.lineCap = "round"; ctx.lineJoin = "round";
+
+  if(a.type === "trait"){
+    ctx.beginPath(); ctx.moveTo(A.x, A.y); ctx.lineTo(B.x, B.y); ctx.stroke();
+  }else if(a.type === "fleche"){
+    fleche(ctx, A, B, ep);
+  }else if(a.type === "rect"){
+    var cx=(A.x+B.x)/2, cy=(A.y+B.y)/2;
+    var w=Math.abs(B.x-A.x), h=Math.abs(B.y-A.y);
+    ctx.translate(cx, cy); ctx.rotate(a.angle || 0);
+    if(a.plein){ ctx.globalAlpha=0.25; ctx.fillRect(-w/2,-h/2,w,h); ctx.globalAlpha=1; }
+    ctx.strokeRect(-w/2,-h/2,w,h);
+  }else if(a.type === "ellipse"){
+    var ex=(A.x+B.x)/2, ey=(A.y+B.y)/2;
+    var rx=Math.abs(B.x-A.x)/2, ry=Math.abs(B.y-A.y)/2;
+    ctx.beginPath(); ctx.ellipse(ex,ey,rx,ry,a.angle || 0,0,6.2832);
+    if(a.plein){ ctx.globalAlpha=0.25; ctx.fill(); ctx.globalAlpha=1; }
+    ctx.stroke();
+  }else if(a.type === "texte" || a.type === "bulle"){
+    var P = versEcran(a.p), t = a.taille * zoom;
+    if(a.type === "bulle"){
+      var Q = versEcran(a.a);
+      fleche(ctx, P, Q, ep);
+    }
+    ctx.translate(P.x, P.y); ctx.rotate(a.angle || 0);
+    ctx.font = t + "px 'Segoe UI',sans-serif";
+    ctx.textBaseline = "alphabetic"; ctx.textAlign = "left";
+    var l = ctx.measureText(a.txt || "").width, m = t*0.35;
+    if(a.type === "bulle"){          // seule la bulle porte un cadre
+      ctx.globalAlpha = 0.85; ctx.fillStyle = "#ffffff";
+      ctx.fillRect(-m, -t*1.25, l + 2*m, t*1.25 + m);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = a.couleur; ctx.lineWidth = Math.max(1, ep*0.6);
+      ctx.strokeRect(-m, -t*1.25, l + 2*m, t*1.25 + m);
+    }
+    ctx.fillStyle = a.couleur;
+    ctx.fillText(a.txt || "", 0, -t*0.28);
+  }
+  ctx.restore();
+
+  if(choisi){
+    ctx.save();
+    ctx.strokeStyle = "#4fa8ff"; ctx.lineWidth = 1.5;
+    ctx.setLineDash([5,4]);
+    var e = emprise(a);
+    ctx.strokeRect(e.x-4, e.y-4, e.w+8, e.h+8);
+    ctx.setLineDash([]);
+    var h = poigneeDe(a);
+    if(h){
+      var H = versEcran(h);
+      ctx.beginPath(); ctx.arc(H.x, H.y, 6, 0, 6.2832);
+      ctx.fillStyle = "#4fa8ff"; ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function emprise(a){
+  var pts;
+  if(a.type === "texte" || a.type === "bulle"){
+    pts = coinsTexte(a).map(versEcran);
+    if(a.type === "bulle") pts.push(versEcran(a.a));
+  }else if(a.angle){
+    var ce = centreDe(a), co = [
+      {x:a.a.x, y:a.a.y}, {x:a.b.x, y:a.a.y},
+      {x:a.b.x, y:a.b.y}, {x:a.a.x, y:a.b.y}];
+    pts = co.map(function(p){ return versEcran(tournerAutour(p, ce, a.angle)); });
+  }else{
+    pts = [versEcran(a.a), versEcran(a.b)];
+  }
+  var xs = pts.map(function(p){return p.x}), ys = pts.map(function(p){return p.y});
+  var x0=Math.min.apply(null,xs), x1=Math.max.apply(null,xs);
+  var y0=Math.min.apply(null,ys), y1=Math.max.apply(null,ys);
+  return {x:x0, y:y0, w:x1-x0, h:y1-y0};
+}
+
+function dessinerAnnots(){
+  var liste = annotsDuPlan();
+  for(var i=0;i<liste.length;i++) traceAnnot(liste[i], i === selAnn);
+  if(brouillon) traceAnnot(brouillon, false);
+}
+
+// ------------------------------------------------------- gestes d'annotation
+function nouvelObjet(q){
+  var base = {couleur: couleurA,
+              ep: EPAIS_PX[epaisA] / zoom,      // epaisseur en POINTS papier
+              plein: pleinA};
+  if(outil === "texte" || outil === "bulle"){
+    base.type = outil; base.p = q; base.angle = 0;
+    base.taille = TAILLE_PX[tailleA] / zoom;
+    if(outil === "bulle") base.a = q;
+  }else{
+    base.type = outil; base.a = q; base.b = q;
+  }
+  return base;
+}
+
+function demanderTexte(a, apres){
+  demander(a.txt === undefined ? "Nouveau commentaire" : "Modifier le commentaire",
+           "Ce texte sera imprime avec le plan.", a.txt || "", function(v){
+    v = (v || "").trim();
+    if(!v) return apres(false);
+    a.txt = v; apres(true);
+  });
+}
+
+function poserAnnot(a){
+  annotsDuPlan().push(a);
+  selAnn = annotsDuPlan().length - 1;
+  sauver(); dessiner();
+}
+
+function supprimerAnnot(){
+  var liste = annotsDuPlan();
+  if(selAnn < 0 || selAnn >= liste.length) return;
+  liste.splice(selAnn, 1); selAnn = -1; sauver(); dessiner();
+}
+
+function tourner(deg){
+  var a = annotsDuPlan()[selAnn];
+  if(!a) return;
+  poserAngle(a, angleDe(a) + deg * Math.PI / 180);
+  sauver(); dessiner();
+}
+
+// une seule porte d'entree, quel que soit le type d'objet
+function poserAngle(a, cible){
+  if(a.type === "trait" || a.type === "fleche"){
+    var ce = centreDe(a), delta = cible - angleDe(a);
+    a.a = tournerAutour(a.a, ce, delta);
+    a.b = tournerAutour(a.b, ce, delta);
+  }else{
+    a.angle = cible;
+  }
+}
+
+// deplace tous les points d'un objet
+function bouger(a, dx, dy){
+  ["a","b","p"].forEach(function(k){
+    if(a[k]){ a[k] = {x: a[k].x + dx, y: a[k].y + dy}; }
+  });
+}
+
+function annotDown(q, e){
+  if(outil === "choisir"){
+    var a = annotsDuPlan()[selAnn];
+    var h = a ? poigneeDe(a) : null;
+    if(h && Math.hypot(q.x-h.x, q.y-h.y) < 10/zoom){ tourneAnn = true; return true; }
+    var i = annotSous(q);
+    selAnn = i;
+    deplaceAnn = (i >= 0) ? {x:q.x, y:q.y} : null;
+    dessiner();
+    return i >= 0;
+  }
+  brouillon = nouvelObjet(q);
+  return true;
+}
+
+// Maj : trait a 0/45/90 degres, rectangle carre, ellipse ronde
+function contraindre(a, q){
+  var dx = q.x - a.a.x, dy = q.y - a.a.y;
+  if(a.type === "trait" || a.type === "fleche"){
+    var an = Math.round(Math.atan2(dy, dx) / (Math.PI/4)) * (Math.PI/4);
+    var L = Math.hypot(dx, dy);
+    return {x: a.a.x + L*Math.cos(an), y: a.a.y + L*Math.sin(an)};
+  }
+  var c = Math.max(Math.abs(dx), Math.abs(dy));
+  return {x: a.a.x + (dx < 0 ? -c : c), y: a.a.y + (dy < 0 ? -c : c)};
+}
+
+function annotMove(q, maj){
+  if(tourneAnn){
+    var a = annotsDuPlan()[selAnn];
+    if(a){
+      if(a.type === "texte" || a.type === "bulle"){
+        var b = boiteTexte(a);
+        a.angle = Math.atan2(q.y - a.p.y, q.x - a.p.x)
+                - Math.atan2(-(b.h + 22/zoom), b.l/2);
+      }else{
+        // la poignee est a 90 deg au-dessus du centre : on retranche ce quart
+        var ce = centreDe(a);
+        poserAngle(a, Math.atan2(q.y - ce.y, q.x - ce.x) + Math.PI/2);
+      }
+      dessiner();
+    }
+    return true;
+  }
+  if(deplaceAnn){
+    var o = annotsDuPlan()[selAnn];
+    if(o){ bouger(o, q.x - deplaceAnn.x, q.y - deplaceAnn.y); deplaceAnn = q; dessiner(); }
+    return true;
+  }
+  if(brouillon){
+    if(brouillon.type === "bulle") brouillon.p = q;
+    else if(brouillon.b) brouillon.b = maj ? contraindre(brouillon, q) : q;
+    dessiner();
+    return true;
+  }
+  return false;
+}
+
+function annotUp(q, clic){
+  if(tourneAnn){ tourneAnn = false; sauver(); return; }
+  if(deplaceAnn){ deplaceAnn = null; sauver(); return; }
+  if(!brouillon) return;
+  var a = brouillon; brouillon = null;
+
+  if(a.type === "texte"){
+    a.p = q;
+    demanderTexte(a, function(ok){ if(ok) poserAnnot(a); else dessiner(); });
+    return;
+  }
+  if(a.type === "bulle"){
+    a.p = q;
+    // pointe = depart du geste, texte = arrivee ; un simple clic decale le texte
+    if(Math.hypot(a.p.x-a.a.x, a.p.y-a.a.y) < 12/zoom){
+      a.a = {x:a.p.x - 60/zoom, y:a.p.y + 60/zoom};
+    }
+    demanderTexte(a, function(ok){ if(ok) poserAnnot(a); else dessiner(); });
+    return;
+  }
+  // trop petit pour etre voulu : on abandonne plutot que de laisser un point
+  if(Math.hypot(a.b.x-a.a.x, a.b.y-a.a.y) < 6/zoom){ dessiner(); return; }
+  poserAnnot(a);
+}
+
+// ------------------------------------------------------------- panneau
+function majPanneau(){
+  $("annot").classList.toggle("on", !!outil);
+  [].forEach.call(document.querySelectorAll("#annot [data-outil]"), function(b){
+    b.classList.toggle("on", b.getAttribute("data-outil") === outil);
+  });
+  [].forEach.call(document.querySelectorAll("#annot [data-coul]"), function(b){
+    b.classList.toggle("on", b.getAttribute("data-coul") === couleurA);
+  });
+  [].forEach.call(document.querySelectorAll("#annot [data-ep]"), function(b){
+    b.classList.toggle("on", +b.getAttribute("data-ep") === epaisA);
+  });
+  [].forEach.call(document.querySelectorAll("#annot [data-taille]"), function(b){
+    b.classList.toggle("on", +b.getAttribute("data-taille") === tailleA);
+  });
+  $("aPlein").classList.toggle("on", pleinA);
+  $("aRot").hidden = selAnn < 0;
+  $("aSuppr").disabled = selAnn < 0;
+  $("bAnn").classList.toggle("on", !!outil);
+}
+
+function choisirOutil(o){
+  // un outil du panneau se CHOISIT, il ne se debraye pas : sinon recliquer
+  // l'outil courant fait sortir du mode annotation sans qu'on l'ait voulu.
+  // Seul le bouton « Annoter » de la barre entre et sort du mode.
+  outil = o || null;
+  if(outil){ mesurer = false; $("bMes").classList.remove("on"); pts = []; survol = null; }
+  // la SELECTION SURVIT au changement d'outil : sinon, apres avoir pose un
+  // texte, passer a « Choisir » pour le tourner le desélectionnait aussitot.
+  if(!outil) selAnn = -1;
+  brouillon = null;
+  majCurseur(); majPanneau(); dessiner();
+}
+
+// ---------------------------------------------- gravure dans le PDF
+// Les annotations sont dessinees DANS la page : le PDF enregistre les porte,
+// donc l'impression aussi. Repere PDF = origine en bas a gauche, Y vers le
+// haut ; le notre = Y vers le bas -> on retourne.
+function couleurPdf(hex){
+  return PDFLib.rgb(parseInt(hex.substr(1,2),16)/255,
+                    parseInt(hex.substr(3,2),16)/255,
+                    parseInt(hex.substr(5,2),16)/255);
+}
+
+function texteSur(txt){
+  // Helvetica n'encode pas tout : on remplace ce qui sortirait du jeu latin
+  var out = "";
+  for(var i=0;i<txt.length;i++){
+    var c = txt.charCodeAt(i);
+    out += (c >= 32 && c <= 255) ? txt[i] : "?";
+  }
+  return out;
+}
+
+// Matrice viewport (repere de la visionneuse) -> espace utilisateur du PDF.
+// C'est pdf.js qui la fournit : elle tient compte de /Rotate ET de la CropBox,
+// que rien ne permet de deviner autrement.
+function infosDeLaPage(octets){
+  return pdfjsLib.getDocument({data: octets.slice(), worker: worker()}).promise
+    .then(function(pdf){
+      return pdf.getPage(1).then(function(pg){
+        var v = pg.getViewport({scale:1});
+        var m = pdfjsLib.Util.inverseTransform(v.transform);
+        try{ pdf.destroy(); }catch(e){}
+        return {mat:m, larg:v.width, haut:v.height};
+      });
+    });
+}
+
+function matriceDeLaPage(octets){
+  return infosDeLaPage(octets).then(function(i){ return i.mat; });
+}
+
+function graverAnnots(doc, liste, mat){
+  return doc.embedFont(PDFLib.StandardFonts.Helvetica).then(function(police){
+    var page = doc.getPage(0), U = pdfjsLib.Util;
+
+    // un point de la visionneuse -> le meme point dans le PDF
+    function P(p){
+      var t = U.applyTransform([p.x, p.y], mat);
+      return {x:t[0], y:t[1]};
+    }
+    // repere propre du texte (Y vers le BAS, comme a l'ecran) -> PDF
+    function loc(pu, cu, su, lx, ly){
+      return {x: pu.x + lx*cu + ly*su, y: pu.y + lx*su - ly*cu};
+    }
+
+    // --- 1. les FORMES, sous la matrice : on garde les coordonnees d'ecran
+    page.pushOperators(
+      PDFLib.pushGraphicsState(),
+      PDFLib.concatTransformationMatrix(mat[0],mat[1],mat[2],mat[3],mat[4],mat[5]));
+
+    function trait(a, b, coul, ep){
+      page.drawLine({start:{x:a.x,y:a.y}, end:{x:b.x,y:b.y},
+                     thickness:ep, color:coul});
+    }
+    function flechePdf(a, b, coul, ep){
+      trait(a, b, coul, ep);
+      var an = Math.atan2(b.y-a.y, b.x-a.x), L = Math.max(6, ep*3.5), o = 0.42;
+      trait({x:b.x - L*Math.cos(an-o), y:b.y - L*Math.sin(an-o)}, b, coul, ep);
+      trait({x:b.x - L*Math.cos(an+o), y:b.y - L*Math.sin(an+o)}, b, coul, ep);
+    }
+
+    liste.forEach(function(a){
+      var coul = couleurPdf(a.couleur), ep = Math.max(0.3, a.ep || 1);
+      if(a.type === "trait"){
+        trait(a.a, a.b, coul, ep);
+      }else if(a.type === "fleche"){
+        flechePdf(a.a, a.b, coul, ep);
+      }else if(a.type === "bulle"){
+        flechePdf(a.p, a.a, coul, ep);          // le trait de rappel
+      }else if(a.type === "rect" || a.type === "ellipse"){
+        // on translate au centre et on tourne, exactement comme a l'ecran :
+        // plus simple et plus sur que de deviner ou pdf-lib place son origine
+        var cx=(a.a.x+a.b.x)/2, cy=(a.a.y+a.b.y)/2;
+        var w=Math.abs(a.b.x-a.a.x), h=Math.abs(a.b.y-a.a.y);
+        var an=a.angle||0, co=Math.cos(an), si=Math.sin(an);
+        page.pushOperators(PDFLib.pushGraphicsState(),
+          PDFLib.concatTransformationMatrix(co, si, -si, co, cx, cy));
+        var opt = {borderColor:coul, borderWidth:ep,
+                   color: a.plein ? coul : undefined,
+                   opacity: a.plein ? 0.25 : undefined};
+        if(a.type === "rect"){
+          opt.x = -w/2; opt.y = -h/2; opt.width = w; opt.height = h;
+          page.drawRectangle(opt);
+        }else{
+          opt.x = 0; opt.y = 0; opt.xScale = w/2; opt.yScale = h/2;
+          page.drawEllipse(opt);
+        }
+        page.pushOperators(PDFLib.popGraphicsState());
+      }
+    });
+
+    page.pushOperators(PDFLib.popGraphicsState());
+
+    // --- 2. les TEXTES, hors matrice : elle les retournerait
+    liste.forEach(function(a){
+      if(a.type !== "texte" && a.type !== "bulle") return;
+      var coul = couleurPdf(a.couleur), ep = Math.max(0.3, a.ep || 1);
+      var txt = texteSur(a.txt || ""), an = a.angle || 0;
+      var pu = P(a.p);
+      // l'angle et l'echelle se lisent sur un vecteur unitaire transforme
+      var dir = P({x: a.p.x + Math.cos(an), y: a.p.y + Math.sin(an)});
+      var vx = dir.x - pu.x, vy = dir.y - pu.y;
+      var k = Math.hypot(vx, vy) || 1;
+      var cu = vx/k, su = vy/k;
+      var angDeg = Math.atan2(vy, vx) * 180 / Math.PI;
+      var t = a.taille * k;
+      var l = police.widthOfTextAtSize(txt, t), m = t*0.35;
+
+      if(a.type === "bulle"){
+        var co = loc(pu, cu, su, -m, m);       // coin bas-gauche du cadre
+        page.drawRectangle({
+          x: co.x, y: co.y, width: l + 2*m, height: t*1.25 + m,
+          rotate: PDFLib.degrees(angDeg),
+          color: PDFLib.rgb(1,1,1), opacity: 0.85,
+          borderColor: coul, borderWidth: Math.max(0.3, ep*0.6)});
+      }
+      var ba = loc(pu, cu, su, 0, -t*0.28);    // ligne de base du texte
+      page.drawText(txt, {x: ba.x, y: ba.y, size: t, font: police,
+                          color: coul, rotate: PDFLib.degrees(angDeg)});
+    });
+
+    return doc.save();
+  });
+}
+
+// octets d'un plan, annotations gravees si demande
+function octetsAnnotes(p){
+  return octetsDuPlan(p).then(function(u){
+    var liste = annots[p.id] || [];
+    if(!liste.length || !$("expoAnn").checked) return u;
+    return chargerFusion()
+      .then(function(){ return matriceDeLaPage(u); })
+      .then(function(mat){
+        return PDFLib.PDFDocument.load(u).then(function(doc){
+          return graverAnnots(doc, liste, mat);
+        });
+      });
+  });
+}
+
+// --------------------------------------------------- découpe en folios
+// Un carnet, c'est UNE feuille géante portant des dizaines de cartouches : on
+// ne l'imprime pas telle quelle. « Impression carnet » (Revit) en fait un PDF
+// d'une page A3 par folio ; on refait exactement cela ici, sans Revit et sans
+// PDFCreator (qu'une page web ne peut pas piloter) : le PDF publié est déjà
+// vectoriel, il suffit de le REPAGINER.
+//
+// Chaque folio devient un objet de formulaire qui ne contient QUE son propre
+// dessin (le flux de la feuille est trié, cf. « allègement »), placé cadré et
+// mis à l'échelle du format. Repli si le tri échoue : le PDF de la feuille
+// embarqué une seule fois et partagé par toutes les pages, chacune n'en
+// montrant que son folio -- juste, mais chaque page porte tout le carnet.
+var FORMATS_FOLIO = {A3:[1190.55, 841.89], A4:[841.89, 595.28]};  // pt, paysage
+
+function foliosDe(p){
+  return (p.folios || []).filter(function(f){
+    return f && f.rect_mm && f.rect_mm.length === 4;
+  });
+}
+
+function decoupeDemandee(p){
+  // un seul cartouche = une feuille ordinaire : rien à découper, on la laisse
+  // telle quelle plutôt que de la re-cadrer inutilement
+  return $("expoFolios").checked && foliosDe(p).length > 1;
+}
+
+// rectangle du folio : mm de la feuille Revit -> espace utilisateur du PDF.
+// On passe par le repère de la visionneuse (points, Y vers le bas), le seul
+// où l'emprise papier retenue par calerPapier() a un sens, puis par la
+// matrice de pdf.js, qui tient compte de /Rotate et de la CropBox.
+// rectangle du folio dans le repère de la visionneuse (points, Y vers le bas)
+function folioEnPoints(p, f){
+  var r = f.rect_mm, k = 1 / p._mmParPt;
+  return {g:(r[0] - p._pap.mm[0]) * k, d:(r[2] - p._pap.mm[0]) * k,
+          h:(p._pap.mm[3] - r[3]) * k, b:(p._pap.mm[3] - r[1]) * k};
+}
+
+function folioEnPdf(p, f, mat, rec){
+  var q = folioEnPoints(p, f), U = pdfjsLib.Util;
+  var a = U.applyTransform([rec.ax * q.g + rec.bx, rec.ay * q.h + rec.by], mat);
+  var b = U.applyTransform([rec.ax * q.d + rec.bx, rec.ay * q.b + rec.by], mat);
+  return {g:Math.min(a[0],b[0]), d:Math.max(a[0],b[0]),
+          b:Math.min(a[1],b[1]), h:Math.max(a[1],b[1])};
+}
+
+// ------------------------------------------- recalage sur les traits du PDF
+// POURQUOI : sur un carnet géant, le PDF de Revit n'est PAS tout à fait à
+// l'échelle qu'il annonce. Un PDF ne peut pas dépasser 200 pouces (5 080 mm) :
+// Revit réduit donc la feuille entière pour tenir dans cette limite, et son
+// facteur de réduction est arrondi. Mesuré sur un carnet de 34,6 m : le dessin
+// est 0,032 % plus grand que la page et centré dessus, soit ±5,5 mm aux deux
+// extrémités (le 1er folio décalé à gauche, celui du milieu juste, le dernier
+// décalé à droite). Découper aux millimètres annoncés laissait donc une bande
+// blanche d'un côté et rognait le cadre de l'autre.
+//
+// On recale donc le découpage sur le DESSIN : les bords des cartouches sont
+// des traits longs (toute la hauteur / toute la largeur du folio). On relève
+// ces traits, on apparie chacun au bord de folio prédit le plus proche, et on
+// en tire une correction affine (a·x + b) par axe. Le décalage est une erreur
+// d'échelle GLOBALE : une droite la corrige exactement. Si l'appariement
+// échoue (cartouche sans cadre, trop peu de traits trouvés) ou si la
+// correction sort des clous, on garde le calcul d'origine : mieux vaut la
+// petite marge qu'un folio cadré n'importe où.
+var RECAL_NEUTRE = {ax:1, bx:0, ay:1, by:0};
+
+function traitsLongs(octets, minV, minH){
+  return pdfjsLib.getDocument({data: octets.slice(), worker: worker()}).promise
+    .then(function(pdf){
+      return pdf.getPage(1).then(function(pg){
+        return pg.getOperatorList().then(function(ol){
+          var U = pdfjsLib.Util, OPS = pdfjsLib.OPS;
+          var cur = pg.getViewport({scale:1}).transform.slice(), pile = [];
+          var vert = [], hori = [], cx = 0, cy = 0, sx = 0, sy = 0;
+          function T(x, y){ return U.applyTransform([x, y], cur); }
+          function seg(a, b){
+            var dx = b[0] - a[0], dy = b[1] - a[1];
+            if(Math.abs(dx) <= 0.05 && Math.abs(dy) >= minV) vert.push(a[0]);
+            else if(Math.abs(dy) <= 0.05 && Math.abs(dx) >= minH) hori.push(a[1]);
+          }
+          for(var i = 0; i < ol.fnArray.length; i++){
+            var fn = ol.fnArray[i], a = ol.argsArray[i];
+            if(fn === OPS.save) pile.push(cur.slice());
+            else if(fn === OPS.restore) cur = pile.pop() || cur;
+            else if(fn === OPS.transform) cur = U.transform(cur, a);
+            else if(fn === OPS.paintFormXObjectBegin){
+              pile.push(cur.slice());
+              if(a && a[0]) cur = U.transform(cur, a[0]);
+            }
+            else if(fn === OPS.paintFormXObjectEnd) cur = pile.pop() || cur;
+            else if(fn === OPS.constructPath){
+              var ops = a[0], args = a[1];
+              for(var k = 0, j = 0; k < ops.length; k++){
+                var o = ops[k];
+                if(o === OPS.rectangle){
+                  var p1 = T(args[j], args[j+1]);
+                  var p2 = T(args[j] + args[j+2], args[j+1] + args[j+3]);
+                  seg(p1, [p1[0], p2[1]]); seg(p2, [p2[0], p1[1]]);
+                  seg(p1, [p2[0], p1[1]]); seg(p2, [p1[0], p2[1]]);
+                  j += 4;
+                }else if(o === OPS.moveTo){
+                  cx = args[j]; cy = args[j+1]; sx = cx; sy = cy; j += 2;
+                }else if(o === OPS.lineTo){
+                  seg(T(cx, cy), T(args[j], args[j+1]));
+                  cx = args[j]; cy = args[j+1]; j += 2;
+                }else if(o === OPS.curveTo){ cx = args[j+4]; cy = args[j+5]; j += 6; }
+                else if(o === OPS.curveTo2 || o === OPS.curveTo3){
+                  cx = args[j+2]; cy = args[j+3]; j += 4;
+                }else if(o === OPS.closePath){
+                  seg(T(cx, cy), T(sx, sy)); cx = sx; cy = sy;
+                }
+              }
+            }
+          }
+          try{ pdf.destroy(); }catch(e){}
+          function net(l){
+            var vu = {}, out = [];
+            l.forEach(function(v){
+              var c = Math.round(v * 100) / 100;
+              if(!vu[c]){ vu[c] = 1; out.push(c); }
+            });
+            return out.sort(function(a, b){ return a - b; });
+          }
+          return {vert:net(vert), hori:net(hori)};
+        });
+      });
+    });
+}
+
+// bords prédits -> bords trouvés : appariement au plus proche, puis droite
+// des moindres carrés. Renvoie null si trop peu de bords retrouvés.
+function droiteSeule(predits, trouves, tol, mini){
+  var xs = [], ys = [];
+  predits.forEach(function(v){
+    var best = null, d = tol;
+    for(var i = 0; i < trouves.length; i++){
+      var e = Math.abs(trouves[i] - v);
+      if(e < d){ d = e; best = trouves[i]; }
+    }
+    if(best !== null){ xs.push(v); ys.push(best); }
+  });
+  if(xs.length < mini) return null;
+  var n = xs.length, sx = 0, sy = 0, sxx = 0, sxy = 0;
+  for(var i = 0; i < n; i++){
+    sx += xs[i]; sy += ys[i]; sxx += xs[i] * xs[i]; sxy += xs[i] * ys[i];
+  }
+  var den = n * sxx - sx * sx;
+  if(Math.abs(den) < 1e-9) return null;
+  var a = (n * sxy - sx * sy) / den;
+  return {a:a, b:(sy - a * sx) / n, n:n};
+}
+
+// DEUX passes : la première tolère largement (le bord peut être à plusieurs
+// millimètres), ce qui laisse passer quelques appariements sur un trait
+// INTÉRIEUR du cartouche ; la seconde, faite sur les bords déjà redressés,
+// serre la tolérance et ne retient plus que les vrais bords. Mesuré sur le
+// carnet de 34,6 m : résidu ramené de 0,27 mm à moins de 0,05 mm.
+function droiteDeRecalage(predits, trouves, tol, mini){
+  var d1 = droiteSeule(predits, trouves, tol, mini);
+  if(!d1) return null;
+  var d2 = droiteSeule(predits.map(function(v){ return d1.a * v + d1.b; }),
+                       trouves, tol / 6, mini);
+  if(!d2) return d1;
+  return {a:d2.a * d1.a, b:d2.a * d1.b + d2.b, n:d2.n};
+}
+
+function recalageFolios(p, fol, octets){
+  if(p._recal) return Promise.resolve(p._recal);
+  var L = [], H = [], q = [];
+  fol.forEach(function(f){
+    var r = folioEnPoints(p, f);
+    q.push(r); L.push(r.d - r.g); H.push(r.b - r.h);
+  });
+  L.sort(function(a, b){ return a - b; });
+  H.sort(function(a, b){ return a - b; });
+  var lm = L[L.length >> 1], hm = H[H.length >> 1];   // folio médian
+  if(!(lm > 0) || !(hm > 0)) return Promise.resolve(RECAL_NEUTRE);
+  return traitsLongs(octets, hm * 0.7, lm * 0.7).then(function(t){
+    var bx = [], by = [];
+    q.forEach(function(r){ bx.push(r.g); bx.push(r.d); by.push(r.h); by.push(r.b); });
+    var rec = {ax:1, bx:0, ay:1, by:0};
+    var mini = Math.max(4, Math.round(bx.length * 0.4));
+    var dx = droiteDeRecalage(bx, t.vert, lm * 0.03, mini);
+    var dy = droiteDeRecalage(by, t.hori, hm * 0.03, mini);
+    // garde-fous : on corrige une dérive, pas un cadrage fantaisiste
+    if(dx && Math.abs(dx.a - 1) < 0.01 && Math.abs(dx.b) < lm){
+      rec.ax = dx.a; rec.bx = dx.b;
+    }
+    if(dy && Math.abs(dy.a - 1) < 0.01 && Math.abs(dy.b) < hm){
+      rec.ay = dy.a; rec.by = dy.b;
+    }
+    p._recal = rec;
+    return rec;
+  })["catch"](function(){ return RECAL_NEUTRE; });
+}
+
+// format de page VU par le lecteur, pour un folio de visW x visH points
+function formatFolio(fmt, visL, visH){
+  if(fmt === "reel") return [visL, visH];
+  var f = FORMATS_FOLIO[fmt] || FORMATS_FOLIO.A3;
+  return (visH > visL) ? [f[1], f[0]] : [f[0], f[1]];   // portrait si le folio l'est
+}
+
+function decouperEnFolios(p, octets){
+  var fol = foliosDe(p), inf = null, rec = RECAL_NEUTRE;
+  if(fol.length < 2) return Promise.resolve(octets);
+  var fmt = $("expoFmt").value;
+  return chargerFusion()
+    .then(function(){ return infosDeLaPage(octets); })
+    .then(function(i){
+      inf = i;
+      // plan jamais ouvert : son emprise papier n'a pas encore été calée
+      if(!p._pap || !p._mmParPt) calerPapier(p, i.larg, i.haut);
+      return recalageFolios(p, fol, octets);
+    })
+    .then(function(r){
+      rec = r;
+      return PDFLib.PDFDocument.load(octets);
+    })
+    .then(function(src){
+      return PDFLib.PDFDocument.create().then(function(sortie){
+        var sp = src.getPage(0);
+        // /Rotate : le formulaire embarqué, lui, n'est JAMAIS tourné. On
+        // travaille donc en repère non tourné et on reporte la rotation sur
+        // chaque page produite -- le lecteur la redresse comme l'original.
+        var rot = 0;
+        try{ rot = ((sp.getRotation().angle % 360) + 360) % 360; }catch(e){}
+        var couche = (rot % 180) !== 0;
+        var bo = null;
+        try{ bo = sp.getCropBox(); }catch(e){}
+        if(!bo || !(bo.width > 0)) bo = sp.getMediaBox();
+        // CADRE DU FORMULAIRE : la page source PLUS les folios. Un formulaire
+        // rogne à son cadre, et le dessin de Revit DÉBORDE de sa propre page
+        // (cf. recalage ci-dessus) : s'en tenir à la page source rognait une
+        // bande du premier et du dernier folio. On l'élargit donc juste assez
+        // pour les contenir -- pas plus : chaque page ne montre de toute façon
+        // que son folio, donc rien d'autre ne peut apparaître.
+        var rects = fol.map(function(f){ return folioEnPdf(p, f, inf.mat, rec); });
+        var cadre = {left:bo.x, bottom:bo.y,
+                     right:bo.x + bo.width, top:bo.y + bo.height};
+        rects.forEach(function(c){
+          cadre.left = Math.min(cadre.left, c.g);
+          cadre.right = Math.max(cadre.right, c.d);
+          cadre.bottom = Math.min(cadre.bottom, c.b);
+          cadre.top = Math.max(cadre.top, c.h);
+        });
+        // Voie normale : un formulaire PAR FOLIO, réduit à son propre dessin
+        // (cf. « allègement »). Repli : l'ancien formulaire unique partagé,
+        // si le flux de Revit contient quelque chose qu'on ne sait pas trier.
+        var folio = null;
+        try{ folio = fabriqueFolios(src, sortie); }catch(e){ folio = null; }
+        var emb = folio ? Promise.resolve(null) : sortie.embedPage(sp, cadre);
+        return emb.then(function(emb){
+          rects.forEach(function(c){
+            var w = c.d - c.g, h = c.h - c.b;
+            if(w < 1 || h < 1) return;
+            var visL = couche ? h : w, visH = couche ? w : h;
+            var P = formatFolio(fmt, visL, visH);
+            // un gros cartouche (dessiné en double, en triple...) est réduit
+            // pour tenir dans la page, comme le zoom d'« Impression carnet »
+            var s = Math.min(P[0] / visL, P[1] / visH);
+            var pl = couche ? P[1] : P[0], ph = couche ? P[0] : P[1];
+            var pg = sortie.addPage([pl, ph]);
+            if(rot) pg.setRotation(PDFLib.degrees(rot));
+            var x = (pl - s * w) / 2, y = (ph - s * h) / 2;
+            if(folio){
+              var nm = pg.node.newXObject("Folio", folio(c));
+              pg.pushOperators(
+                PDFLib.pushGraphicsState(),
+                PDFLib.concatTransformationMatrix(s, 0, 0, s, x - s * c.g, y - s * c.b),
+                PDFLib.drawObject(nm),
+                PDFLib.popGraphicsState());
+            }else{
+              pg.drawPage(emb, {
+                x: x - s * (c.g - cadre.left),
+                y: y - s * (c.b - cadre.bottom),
+                xScale: s, yScale: s});
+            }
+          });
+          if(!sortie.getPageCount()) return octets;   // rien de cadrable
+          return sortie.save();
+        });
+      });
+    });
+}
+
+// ------------------------------------------------ allègement des PDF exportés
+// DEBUT ALLEGEMENT (bloc repris tel quel par le banc d'essai hors Revit)
+//
+// Le PDF de Revit est 100 % vectoriel. Deux choses le font enfler :
+//  1. ses coordonnées ont 5 décimales, soit 0,00002 mm sur un carnet. On les
+//     arrondit au pas de 0,05 mm du papier, invisible à l'impression : -35 %
+//     sur le carnet 21 ;
+//  2. chaque folio embarquait le carnet ENTIER et n'en montrait qu'un
+//     cartouche. On trie donc le dessin : chaque folio ne garde que les traits
+//     et textes qui touchent son cadre (+ marge), ce qui allège le fichier ET
+//     l'impression (l'imprimante ne traite plus tout le carnet à chaque page).
+// On ne touche qu'aux ORDRES DE DESSIN : tout ce qui change l'état graphique
+// (couleurs, épaisseurs, q/Q, cm, découpes W, contenu marqué) est gardé tel
+// quel, sinon la suite du dessin changerait d'aspect. En cas de doute (image
+// en ligne, flux illisible), on renonce et on garde l'export d'origine.
+var PAS_ARRONDI_MM = 0.05;      // pas des coordonnées, en mm sur le papier
+var MARGE_TRAIT_MM = 5;         // tolérance autour du cadre pour les traits
+var MARGE_TEXTE = 0.3;          // textes : origine connue, pas la longueur
+
+function flux2txt(u){
+  var out = [], N = 32768;
+  for(var i = 0; i < u.length; i += N)
+    out.push(String.fromCharCode.apply(null, u.subarray(i, i + N)));
+  return out.join("");
+}
+
+function txt2octets(s){
+  var u = new Uint8Array(s.length);
+  for(var i = 0; i < s.length; i++) u[i] = s.charCodeAt(i) & 0xFF;
+  return u;
+}
+
+// flux de contenu d'une page (un ou plusieurs), décodés et mis bout à bout
+function contenuBrut(page){
+  var c = page.node.Contents(), ctx = page.node.context, L = PDFLib;
+  var liste = [];
+  if(c instanceof L.PDFArray){
+    for(var i = 0; i < c.size(); i++) liste.push(c.lookup(i));
+  }else if(c){
+    liste.push(c);
+  }
+  return liste.map(function(s){
+    if(s instanceof L.PDFRawStream) return flux2txt(L.decodePDFRawStream(s).decode());
+    if(s instanceof L.PDFContentStream) return flux2txt(s.getUnencodedContents());
+    throw new Error("flux de contenu illisible");
+  }).join("\n");
+}
+
+// mm du papier par unité de l'espace utilisateur (Revit pose /UserUnit sur
+// les carnets de plus de 5 m)
+function mmParUnite(page){
+  var uu = 1;
+  try{
+    var n = page.node.get(PDFLib.PDFName.of("UserUnit"));
+    if(n && n.asNumber) uu = n.asNumber() || 1;
+  }catch(e){}
+  return uu * 25.4 / 72;
+}
+
+// Découpe le flux en ÉLÉMENTS typés : un tracé (de son premier m/re à son
+// ordre de peinture), un bloc de texte (BT..ET), un Do, ou UN ordre d'état.
+// Les éléments dessinés portent leur emprise dans l'espace de la page.
+var E_BRUT = 0, E_TRACE = 1, E_TEXTE = 2, E_IMAGE = 3, E_Q = 4, E_FQ = 5,
+    E_MC = 6, E_FMC = 7, E_REGLE = 8, E_REGLE_MULT = 9, E_DESSIN = 10;
+// réglages dont seule la DERNIÈRE valeur compte avant un dessin
+var REGLAGES = {RG:1, rg:1, G:1, g:1, K:1, k:1, CS:1, cs:1, SC:1, SCN:1, sc:1,
+  scn:1, w:1, J:1, j:1, M:1, d:1, ri:1, i:1, Tc:1, Tw:1, Tz:1, TL:1, Tf:1,
+  Tr:1, Ts:1};
+
+function sorteEtat(op){
+  if(op === "q") return E_Q;
+  if(op === "Q") return E_FQ;
+  if(op === "BMC" || op === "BDC") return E_MC;
+  if(op === "EMC") return E_FMC;
+  if(REGLAGES[op]) return E_REGLE;
+  if(op === "gs") return E_REGLE_MULT;
+  if(op === "sh") return E_DESSIN;
+  return E_BRUT;
+}
+
+function analyserContenu(src, mmU, images){
+  var n = src.length, i = 0;
+  var txt = [], kind = [], bb = [], alt = [], nom = [], cle = [];
+  var ops = [];                           // opérandes {t, v}
+  var ctm = [1,0,0,1,0,0], pile = [];
+  var pasPage = PAS_ARRONDI_MM / mmU, dec = 0;
+  var chemin = null, cbb = null, clip = false;
+  var texte = null, tbb = null, tetat = null, lm = null;
+
+  function decimales(){
+    var sc = Math.sqrt(Math.abs(ctm[0] * ctm[3] - ctm[1] * ctm[2])) || 1;
+    dec = Math.max(0, Math.min(6, Math.ceil(-Math.log(pasPage / sc) / Math.LN10)));
+  }
+  decimales();
+  function fmt(v){
+    var s = v.toFixed(dec);
+    if(dec > 0) s = s.replace(/0+$/, "").replace(/\.$/, "");
+    if(s === "-0") s = "0";
+    return s.replace(/^(-?)0\./, "$1.");
+  }
+  function pt(x, y, b){
+    var X = ctm[0]*x + ctm[2]*y + ctm[4], Y = ctm[1]*x + ctm[3]*y + ctm[5];
+    if(X < b[0]) b[0] = X; if(Y < b[1]) b[1] = Y;
+    if(X > b[2]) b[2] = X; if(Y > b[3]) b[3] = Y;
+  }
+  function vide(){ return [Infinity, Infinity, -Infinity, -Infinity]; }
+  function brut(){ return ops.map(function(o){ return o.t; }).join(" "); }
+  function el(t, k, b, a, nm, c){
+    txt.push(t); kind.push(k); bb.push(b || null); alt.push(a || null);
+    nom.push(nm || null); cle.push(c || null);
+  }
+  function ESPACE(c){ return c === 32 || c === 10 || c === 13 || c === 9 || c === 12 || c === 0; }
+  function DELIM(c){ return c === 40 || c === 41 || c === 60 || c === 62 || c === 91 ||
+                            c === 93 || c === 123 || c === 125 || c === 47 || c === 37; }
+  function finChaine(j){                   // j sur "(" -> indice après ")"
+    var prof = 0;
+    for(; j < n; j++){
+      var c = src.charCodeAt(j);
+      if(c === 92){ j++; continue; }
+      if(c === 40) prof++;
+      else if(c === 41 && --prof === 0) return j + 1;
+    }
+    throw new Error("chaîne non fermée");
+  }
+  function finGroupe(j, ouv){              // tableaux [..] et dictionnaires <<..>>
+    var prof = 0;
+    while(j < n){
+      var c = src.charCodeAt(j);
+      if(c === 40){ j = finChaine(j); continue; }
+      if(ouv === 91){
+        if(c === 91) prof++;
+        else if(c === 93 && --prof === 0) return j + 1;
+        j++;
+      }else{
+        if(c === 60 && src.charCodeAt(j+1) === 60){ prof++; j += 2; continue; }
+        if(c === 62 && src.charCodeAt(j+1) === 62){ if(--prof === 0) return j + 2; j += 2; continue; }
+        j++;
+      }
+    }
+    throw new Error("groupe non fermé");
+  }
+  var NB = /^[+-]?(\d+\.?\d*|\.\d+)$/;
+
+  while(i < n){
+    var c = src.charCodeAt(i);
+    if(ESPACE(c)){ i++; continue; }
+    if(c === 37){ while(i < n && src.charCodeAt(i) !== 10 && src.charCodeAt(i) !== 13) i++; continue; }
+    var j;
+    if(c === 40){ j = finChaine(i); ops.push({t:src.substring(i, j), v:NaN}); i = j; continue; }
+    if(c === 91){ j = finGroupe(i, 91); ops.push({t:src.substring(i, j), v:NaN}); i = j; continue; }
+    if(c === 60){
+      if(src.charCodeAt(i+1) === 60) j = finGroupe(i, 60);
+      else { j = src.indexOf(">", i); if(j < 0) throw new Error("hexa"); j++; }
+      ops.push({t:src.substring(i, j), v:NaN}); i = j; continue;
+    }
+    j = i + 1;
+    while(j < n){ var d = src.charCodeAt(j); if(ESPACE(d) || DELIM(d)) break; j++; }
+    var tok = src.substring(i, j);
+    i = j;
+    if(c === 47){ ops.push({t:tok, v:NaN}); continue; }
+    if(NB.test(tok)){ ops.push({t:tok, v:parseFloat(tok)}); continue; }
+
+    // ---- un opérateur
+    var op = tok, v = ops.map(function(o){ return o.v; });
+    if(op === "BI" || op === "ID" || op === "EI") throw new Error("image en ligne");
+    var ligne = brut() + (ops.length ? " " : "") + op;
+
+    if(texte){
+      if(op === "ET"){
+        texte.push("ET");
+        if(tbb[0] <= tbb[2]) el(texte.join("\n"), E_TEXTE, tbb, tetat);
+        else el(texte.join("\n"), E_DESSIN);
+        texte = null;
+      }else{
+        texte.push(ligne);
+        if(op === "Tm" && v.length === 6){
+          lm = v.slice(); pt(lm[4], lm[5], tbb);
+        }else if((op === "Td" || op === "TD") && v.length === 2){
+          lm[4] += v[0]*lm[0] + v[1]*lm[2]; lm[5] += v[0]*lm[1] + v[1]*lm[3];
+          pt(lm[4], lm[5], tbb);
+          if(op === "TD") tetat.push([fmt(-v[1]) + " TL", "TL"]);
+        }else if(op === '"' && v.length >= 2){
+          tetat.push([ops[0].t + " Tw", "Tw"]); tetat.push([ops[1].t + " Tc", "Tc"]);
+        }else if(op !== "Tj" && op !== "TJ" && op !== "'" && op !== "T*"){
+          tetat.push([ligne, op]);        // état de texte, couleurs, contenu marqué
+        }
+      }
+      ops = []; continue;
+    }
+
+    if(op === "m" || op === "l" || op === "c" || op === "v" || op === "y" || op === "re" || op === "h"){
+      if(!chemin){ chemin = []; cbb = vide(); clip = false; }
+      if(op === "re" && v.length === 4){
+        pt(v[0], v[1], cbb); pt(v[0] + v[2], v[1] + v[3], cbb);
+        pt(v[0] + v[2], v[1], cbb); pt(v[0], v[1] + v[3], cbb);
+      }else{
+        for(var k = 0; k + 1 < v.length; k += 2) pt(v[k], v[k+1], cbb);
+      }
+      chemin.push(ops.map(function(o){ return isNaN(o.v) ? o.t : fmt(o.v); }).join(" ") +
+                  (ops.length ? " " : "") + op);
+      ops = []; continue;
+    }
+    if(op === "W" || op === "W*"){
+      if(!chemin){ chemin = []; cbb = vide(); }
+      chemin.push(op); clip = true; ops = []; continue;
+    }
+    if(op === "S" || op === "s" || op === "f" || op === "F" || op === "f*" || op === "B" ||
+       op === "B*" || op === "b" || op === "b*" || op === "n"){
+      var corps = (chemin ? chemin.join("\n") + "\n" : "") + op;
+      if(clip) el(corps, E_BRUT);                     // découpe : on la garde
+      else if(chemin && cbb[0] <= cbb[2] && op !== "n") el(corps, E_TRACE, cbb);
+      chemin = null; clip = false; ops = []; continue;
+    }
+
+    if(op === "BT"){
+      texte = ["BT"]; tbb = vide(); tetat = []; lm = [1,0,0,1,0,0];
+    }else if(op === "Do" && ops.length){
+      var nm = ops[0].t.substring(1);
+      if(images[nm]){
+        var b = vide(); pt(0, 0, b); pt(1, 1, b); pt(1, 0, b); pt(0, 1, b);
+        el(ligne, E_IMAGE, b, null, nm);
+      }else{
+        el(ligne, E_DESSIN, null, null, nm);
+      }
+    }else{
+      if(op === "q") pile.push(ctm.slice());
+      else if(op === "Q"){ ctm = pile.pop() || ctm; decimales(); }
+      else if(op === "cm" && v.length === 6){
+        var m = v, a = ctm;
+        ctm = [m[0]*a[0] + m[1]*a[2], m[0]*a[1] + m[1]*a[3],
+               m[2]*a[0] + m[3]*a[2], m[2]*a[1] + m[3]*a[3],
+               m[4]*a[0] + m[5]*a[2] + a[4], m[4]*a[1] + m[5]*a[3] + a[5]];
+        decimales();
+      }
+      el(ligne, sorteEtat(op), null, null, null, op);
+    }
+    ops = [];
+  }
+  if(texte) throw new Error("BT sans ET");
+  if(chemin) el(chemin.join("\n"), E_BRUT);
+  return {txt:txt, kind:kind, bb:bb, alt:alt, nom:nom, cle:cle, mmU:mmU};
+}
+
+// Contenu d'un folio : r = {g, d, b, h} dans l'espace de la page, ou null
+// (tout garder : arrondi seul). Renvoie le texte et les XObject utilisés.
+//
+// Tri des dessins, puis NETTOYAGE de l'état, sans quoi chaque folio traînait
+// les ~650 Ko d'ordres d'état du carnet entier (un groupe q..Q, une découpe de
+// vue et des marqueurs par élément) :
+//  - un groupe q..Q sans aucun dessin gardé disparaît en entier (Q restaure
+//    l'état : rien de ce qu'il contient ne compte après lui) ;
+//  - un marqueur BMC/BDC..EMC vide disparaît (ses réglages restent) ;
+//  - un réglage (couleur, épaisseur...) n'est écrit qu'au moment d'un dessin
+//    gardé, et seule sa dernière valeur. Ceux posés dans un groupe PARENT
+//    sont réinsérés avant le q du groupe enfant, pour survivre à son Q.
+// q..Q et BMC..EMC s'entrecroisent chez Revit : deux piles séparées.
+function contenuFolio(A, r){
+  var xo = {}, i;
+  if(!r){
+    for(i = 0; i < A.txt.length; i++) if(A.nom[i]) xo[A.nom[i]] = true;
+    return {txt:A.txt.join("\n"), xo:xo};
+  }
+  var mt = MARGE_TRAIT_MM / A.mmU;
+  var mx = MARGE_TEXTE * Math.max(r.d - r.g, r.h - r.b);
+  var out = [];
+  var qs = [{i:-1, pend:[], cles:{}}];    // groupes q ouverts (0 = la page)
+  var mcs = [];                           // marqueurs ouverts {i, t, vu}
+
+  function regler(t, c){
+    var f = qs[qs.length - 1];
+    if(c){
+      if(f.cles[c] !== undefined) f.pend[f.cles[c]] = null;
+      f.cles[c] = f.pend.length;
+    }
+    f.pend.push(t);
+  }
+  function decaler(depuis, n){
+    for(var k = 1; k < qs.length; k++) if(qs[k].i >= depuis) qs[k].i += n;
+    for(k = 0; k < mcs.length; k++) if(mcs[k].i >= depuis) mcs[k].i += n;
+  }
+  function dessiner(t){
+    for(var L = qs.length - 1; L >= 0; L--){
+      var f = qs[L], p = f.pend.filter(function(x){ return x !== null; });
+      if(p.length){
+        if(L === qs.length - 1) Array.prototype.push.apply(out, p);
+        else{
+          var pos = qs[L + 1].i;
+          out.splice.apply(out, [pos, 0].concat(p));
+          decaler(pos, p.length);
+        }
+      }
+      f.pend = []; f.cles = {}; f.vu = true;
+    }
+    for(var k = 0; k < mcs.length; k++) mcs[k].vu = true;
+    out.push(t);
+  }
+  function dedans(b, m){
+    return !(b[2] < r.g - m || b[0] > r.d + m || b[3] < r.b - m || b[1] > r.h + m);
+  }
+
+  for(i = 0; i < A.txt.length; i++){
+    var k = A.kind[i], t = A.txt[i];
+    if(k === E_TRACE || k === E_IMAGE){
+      if(dedans(A.bb[i], mt)){ dessiner(t); if(A.nom[i]) xo[A.nom[i]] = true; }
+    }else if(k === E_TEXTE){
+      if(dedans(A.bb[i], mx)) dessiner(t);
+      else (A.alt[i] || []).forEach(function(a){
+        // texte écarté : ses réglages restent (Tf, couleur...), ses
+        // marqueurs éventuels aussi, tels quels
+        if(REGLAGES[a[1]]) regler(a[0], a[1]);
+        else out.push(a[0]);
+      });
+    }else if(k === E_DESSIN){
+      dessiner(t); if(A.nom[i]) xo[A.nom[i]] = true;
+    }else if(k === E_REGLE){
+      regler(t, A.cle[i]);
+    }else if(k === E_REGLE_MULT){
+      regler(t, null);
+    }else if(k === E_Q){
+      qs.push({i:out.length, pend:[], cles:{}, vu:false});
+      out.push(t);
+    }else if(k === E_FQ){
+      if(qs.length < 2){ out.push(t); continue; }
+      var f = qs.pop();
+      if(f.vu){ out.push(t); continue; }
+      // groupe vide : on coupe tout depuis son q, sauf les marqueurs encore
+      // ouverts qu'il contenait (ils se ferment plus loin)
+      var ouverts = mcs.filter(function(m){ return m.i > f.i; });
+      out.length = f.i;
+      ouverts.forEach(function(m){ m.i = out.length; out.push(m.t); });
+    }else if(k === E_MC){
+      mcs.push({i:out.length, t:t, vu:false});
+      out.push(t);
+    }else if(k === E_FMC){
+      var m = mcs.pop();
+      if(!m || m.vu){ out.push(t); continue; }
+      out.splice(m.i, 1);
+      decaler(m.i + 1, -1);
+    }else{
+      out.push(t);                        // découpe, cm, ordres inconnus
+    }
+  }
+  return {txt:out.join("\n"), xo:xo};
+}
+
+// noms des XObject IMAGES de la page (les seuls dont on connaît l'emprise :
+// le carré unité sous la matrice courante)
+function imagesDeLaPage(page){
+  var L = PDFLib, res = page.node.Resources(), out = {};
+  var xd = res && res.lookup(L.PDFName.of("XObject"));
+  if(!(xd instanceof L.PDFDict)) return out;
+  xd.entries().forEach(function(e){
+    try{
+      var s = xd.lookup(e[0]);
+      if(s && s.dict && s.dict.get(L.PDFName.of("Subtype")) === L.PDFName.of("Image"))
+        out[e[0].asString().substring(1)] = true;
+    }catch(er){}
+  });
+  return out;
+}
+
+function analyserPage(page){
+  return analyserContenu(contenuBrut(page), mmParUnite(page), imagesDeLaPage(page));
+}
+
+// point 1 seul : réécrit le contenu de chaque page, coordonnées arrondies.
+// Les anciens flux sont RETIRÉS du document (pdf-lib écrit tout objet
+// enregistré, même orphelin).
+function arrondirDoc(doc){
+  var L = PDFLib, ctx = doc.context;
+  doc.getPages().forEach(function(pg){
+    var A = analyserPage(pg);
+    var neuf = ctx.flateStream(txt2octets(contenuFolio(A, null).txt));
+    var c = pg.node.get(L.PDFName.of("Contents"));
+    var refs = [];
+    if(c instanceof L.PDFRef) refs.push(c);
+    else if(c instanceof L.PDFArray)
+      for(var i = 0; i < c.size(); i++){ var e = c.get(i); if(e instanceof L.PDFRef) refs.push(e); }
+    var cible = ctx.lookup(refs[0]);
+    if(refs.length && cible instanceof L.PDFArray) throw new Error("contenu imbriqué");
+    if(refs.length){
+      ctx.assign(refs[0], neuf);
+      refs.slice(1).forEach(function(r){ ctx.delete(r); });
+      pg.node.set(L.PDFName.of("Contents"), refs[0]);
+    }else{
+      pg.node.set(L.PDFName.of("Contents"), ctx.register(neuf));
+    }
+  });
+}
+
+function octetsArrondis(octets){
+  return chargerFusion()
+    .then(function(){ return PDFLib.PDFDocument.load(octets); })
+    .then(function(doc){ arrondirDoc(doc); return doc.save(); })
+    ["catch"](function(){ return octets; });   // au pire : l'original
+}
+
+// Prépare, dans le document de sortie, un objet de formulaire PAR FOLIO ne
+// contenant que son dessin. Les ressources communes (polices, états
+// graphiques) sont copiées une seule fois ; les images, seulement si un folio
+// s'en sert. Renvoie une fonction folio(c) -> réf. du formulaire.
+function fabriqueFolios(src, sortie){
+  var L = PDFLib, sp = src.getPage(0);
+  var A = analyserPage(sp);
+  var cop = L.PDFObjectCopier.for(src.context, sortie.context);
+  var res = sp.node.Resources(), communs = [], xd = null;
+  if(res) res.entries().forEach(function(e){
+    if(e[0] === L.PDFName.of("XObject")) xd = res.lookup(e[0]);
+    else{
+      // objet INDIRECT, partagé par tous les folios : un dictionnaire direct
+      // serait réécrit en entier dans chacun (les /Properties des contenus
+      // marqués de Revit : ~1,4 Mo de plus sur un carnet de 79 folios)
+      var o = cop.copy(e[1]);
+      if(!(o instanceof L.PDFRef)) o = sortie.context.register(o);
+      communs.push([e[0], o]);
+    }
+  });
+  return function(c){
+    var cf = contenuFolio(A, c);
+    var rd = sortie.context.obj({});
+    communs.forEach(function(e){ rd.set(e[0], e[1]); });
+    if(xd instanceof L.PDFDict){
+      var xo = sortie.context.obj({});
+      Object.keys(cf.xo).forEach(function(nm){
+        var r = xd.get(L.PDFName.of(nm));
+        if(r) xo.set(L.PDFName.of(nm), cop.copy(r));
+      });
+      rd.set(L.PDFName.of("XObject"), xo);
+    }
+    // cadre du formulaire = le folio + 1 mm : le trait du cartouche, posé
+    // pile sur sa limite, n'est pas rogné de moitié
+    var e = 1 / A.mmU;
+    var f = sortie.context.flateStream(txt2octets(cf.txt), {
+      Type:"XObject", Subtype:"Form", FormType:1,
+      BBox:[c.g - e, c.b - e, c.d + e, c.h + e], Resources:rd});
+    return sortie.context.register(f);
+  };
+}
+// FIN ALLEGEMENT
+
+// octets d'un plan tels qu'on les enregistre : annotations gravées, puis
+// découpe en folios si elle est demandée, sinon simple arrondi des coordonnées
+function octetsPourExport(p){
+  return octetsAnnotes(p).then(function(u){
+    return decoupeDemandee(p) ? decouperEnFolios(p, u) : octetsArrondis(u);
+  });
+}
+
+// ------------------------------------------------------- enregistrer en PDF
+// Les plans SONT des PDF : les enregistrer ne demande aucune reconstruction.
+// Seul le regroupement en un fichier unique exige une fusion, d'ou pdf-lib,
+// charge seulement quand on la demande (513 Ko qu'on ne fait pas payer aux
+// autres visites).
+function nomFichier(txt){
+  return String(txt).replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim();
+}
+
+function telecharger(octets, nom){
+  var url = URL.createObjectURL(new Blob([octets], {type:"application/pdf"}));
+  var a = document.createElement("a");
+  a.href = url; a.download = nom;
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.remove(); }, 2000);
+}
+
+// octets DECHIFFRES d'un plan, qu'il soit deja ouvert ou non
+function octetsDuPlan(p){
+  return new Promise(function(ok, ko){
+    chargerOctets(source(p), ok, function(m){ ko(new Error(m)); });
+  });
+}
+
+function chargerFusion(){
+  if(window.PDFLib) return Promise.resolve();
+  return new Promise(function(ok, ko){
+    var sc = document.createElement("script");
+    sc.src = "pdfjs/pdf-lib.min.js" + (window.FRAIS || "");
+    sc.onload = function(){ window.PDFLib ? ok() : ko(new Error("pdf-lib")); };
+    sc.onerror = function(){ ko(new Error("pdf-lib introuvable")); };
+    document.head.appendChild(sc);
+  });
+}
+
+function plansCoches(){
+  return [].slice.call(document.querySelectorAll("#expoListe input:checked"))
+           .map(function(c){
+             return PLANS.filter(function(p){ return p.id === c.value; })[0];
+           }).filter(Boolean);
+}
+
+function etatExpo(txt){ $("expoEtat").textContent = txt || ""; }
+
+function boutonsExpo(actifs){
+  ["expoUn","expoSep","expoTout","expoRien"].forEach(function(id){
+    $(id).disabled = !actifs;
+  });
+}
+
+function ouvrirExpo(){
+  var l = $("expoListe");
+  l.innerHTML = "";
+  var courant = null;
+  PLANS.forEach(function(p){
+    if(p.niveau && p.niveau !== courant){
+      // clic sur la rubrique = coche / decoche tout le niveau
+      courant = p.niveau;
+      var h = document.createElement("div");
+      h.className = "niv"; h.textContent = courant;
+      h.title = "Cocher / décocher tout le niveau";
+      h.onclick = (function(n){ return function(){
+        var cs = [].filter.call(document.querySelectorAll("#expoListe input"),
+                   function(c){ return c.dataset.niv === n; });
+        var tout = cs.every(function(c){ return c.checked; });
+        cs.forEach(function(c){ c.checked = !tout; });
+      }; })(courant);
+      l.appendChild(h);
+    }
+    var lab = document.createElement("label");
+    var c = document.createElement("input");
+    c.type = "checkbox"; c.value = p.id; c.dataset.niv = p.niveau || "";
+    c.checked = !!(plan && p.id === plan.id);
+    lab.appendChild(c);
+    lab.appendChild(document.createTextNode(p.num + " "));
+    var sp = document.createElement("span");
+    sp.textContent = p.nom || "";
+    lab.appendChild(sp);
+    l.appendChild(lab);
+  });
+  // Découpe en folios : sans carnet publié, la case n'a rien à mordre. On la
+  // grise en DISANT pourquoi -- un dossier publié avant cette fonction n'a
+  // pas les rectangles de cartouches, il faut relancer l'outil dans Revit.
+  var carnets = PLANS.filter(function(p){ return foliosDe(p).length > 1; });
+  var cf = $("expoFolios"), cs = $("expoFmt");
+  cf.disabled = cs.disabled = !carnets.length;
+  if(!carnets.length){
+    cf.checked = false;
+    cf.parentNode.title = "Aucun carnet ici : ces plans n'ont qu'un cartouche,"
+      + " ou ils ont été publiés avant cette fonction (relancez alors"
+      + " « Visionneuse web » dans Revit).";
+  }
+  etatExpo(carnets.length
+    ? carnets.length + " carnet(s) découpable(s) en folios."
+    : "");
+  boutonsExpo(true);
+  $("expo").classList.add("on");
+}
+
+// enregistrement separe : un fichier par plan, nomme lisiblement
+function expoSepares(){
+  var choisis = plansCoches();
+  if(!choisis.length) return etatExpo("Cochez au moins un plan.");
+  boutonsExpo(false);
+  var i = 0;
+  (function suivant(){
+    if(i >= choisis.length){
+      etatExpo(choisis.length + " fichier(s) enregistré(s).");
+      boutonsExpo(true);
+      return;
+    }
+    var p = choisis[i++];
+    var coupe = decoupeDemandee(p);
+    etatExpo("Préparation " + i + "/" + choisis.length + " : " + p.num +
+             (coupe ? " (" + foliosDe(p).length + " folios)" : "") + "…");
+    octetsPourExport(p).then(function(u){
+      telecharger(u, nomFichier(p.num + " - " + (p.nom || "plan") +
+                                (coupe ? " - folios" : "")) + ".pdf");
+      setTimeout(suivant, 350);      // laisse le navigateur souffler
+    })["catch"](function(e){
+      etatExpo("Échec sur " + p.num + " : " + e.message);
+      boutonsExpo(true);
+    });
+  })();
+}
+
+// un seul fichier : fusion des pages dans l'ordre de la liste
+function expoUnSeul(){
+  var choisis = plansCoches();
+  if(!choisis.length) return etatExpo("Cochez au moins un plan.");
+  if(choisis.length === 1) return expoSepares();   // gravure comprise
+  boutonsExpo(false);
+  etatExpo("Préparation de l'outil de fusion…");
+  chargerFusion().then(function(){
+    return PDFLib.PDFDocument.create();
+  }).then(function(sortie){
+    var i = 0;
+    function suivant(){
+      if(i >= choisis.length) return sortie.save();
+      var p = choisis[i++];
+      etatExpo("Ajout " + i + "/" + choisis.length + " : " + p.num +
+               (decoupeDemandee(p)
+                  ? " (" + foliosDe(p).length + " folios)" : "") + "…");
+      return octetsPourExport(p)
+        .then(function(u){ return PDFLib.PDFDocument.load(u); })
+        .then(function(src){
+          return sortie.copyPages(src, src.getPageIndices());
+        })
+        .then(function(pages){
+          pages.forEach(function(pg){ sortie.addPage(pg); });
+          return suivant();
+        });
+    }
+    return suivant();
+  }).then(function(octets){
+    telecharger(octets, nomFichier((D.projet || "plans") + " - " +
+                                   choisis.length + " plans") + ".pdf");
+    etatExpo("Enregistré : " + choisis.length + " plans en un fichier.");
+    boutonsExpo(true);
+  })["catch"](function(e){
+    etatExpo("Fusion impossible (" + e.message +
+             "). Essayez « Fichiers séparés ».");
+    boutonsExpo(true);
+  });
+}
+
+// ---------------------------------------------------------------- souris
+var glisse=false, dep=null, bouge=0;
+cv.addEventListener("pointerdown",function(e){
+  if(!page) return;
+  try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+  if(outil){
+    // en annotation, le clic construit ou choisit ; il ne deplace le plan
+    // que si l'outil ne s'en saisit pas
+    if(annotDown(versMonde(e.offsetX,e.offsetY), e)){
+      try{ cv.setPointerCapture(e.pointerId); }catch(_){}
+      glisse=false; dep=null; return;
+    }
+  }
+  glisse=true; bouge=0; dep={x:e.offsetX,y:e.offsetY,px:panX,py:panY};
+  majCurseur();
+});
+cv.addEventListener("pointermove",function(e){
+  if(!page) return;
+  if(outil && annotMove(versMonde(e.offsetX,e.offsetY), e.shiftKey)) return;
+  if(glisse&&dep){
+    var dx=e.offsetX-dep.x, dy=e.offsetY-dep.y;
+    bouge=Math.max(bouge,Math.abs(dx)+Math.abs(dy));
+    if(!mesurer||bouge>4){
+      besoinFit=false; autoCadre=false;
+      panX=dep.px+dx; panY=dep.py+dy; planifier();
+    }
+  }else if(mesurer){
+    curseur=versMonde(e.offsetX,e.offsetY);
+    accroche=accrocherPoint(curseur, pts[0]);
+    if(pts.length===1) survol=accroche||curseur;
+    dessiner();
+  }
+});
+cv.addEventListener("pointerup",function(e){
+  if(!page) return;
+  var clic=bouge<=4;
+  glisse=false; dep=null; majCurseur();
+  if(outil){
+    var qq = versMonde(e.offsetX,e.offsetY);
+    if(e.shiftKey && brouillon && brouillon.b) qq = contraindre(brouillon, qq);
+    annotUp(qq, clic); majPanneau(); return;
+  }
+  if(!clic||!mesurer) return;
+  var q=versMonde(e.offsetX,e.offsetY);
+  var a=accrocherPoint(q, pts[0]);
+  if(a) q={x:a.x, y:a.y};          // la mesure part du point accroche
+  if(pts.length===0){
+    pts=[q]; survol=q; indice("Cliquez le 2ᵉ point (Échap pour annuler)",0);
+  }else{
+    if(!mesures[plan.id]) mesures[plan.id]=[];
+    mesures[plan.id].push({a:pts[0],b:q});
+    pts=[]; survol=null; sauver(); indice("Cliquez le 1ᵉʳ point d'une nouvelle mesure",2500);
+  }
+  dessiner();
+});
+cv.addEventListener("wheel",function(e){
+  if(!page) return;
+  e.preventDefault();
+  zoomer(e.deltaY<0?1.16:1/1.16,e.offsetX,e.offsetY);
+},{passive:false});
+cv.addEventListener("dblclick",function(e){
+  if(!page) return;
+  if(outil === "choisir"){
+    var i = annotSous(versMonde(e.offsetX,e.offsetY));
+    if(i >= 0){
+      var a = annotsDuPlan()[i];
+      if(a.type === "texte" || a.type === "bulle"){
+        selAnn = i;
+        return demanderTexte(a, function(){ sauver(); dessiner(); });
+      }
+    }
+  }
+  if(!mesurer && !outil) cadrer();
+});
+function majCurseur(){
+  cv.className = (mesurer || (outil && outil !== "choisir")) ? "cross"
+               : (glisse ? "grabbing" : "grab");
+}
+
+// ---------------------------------------------------------------- boutons
+$("bIn").onclick=function(){zoomer(1.3)};
+$("bOut").onclick=function(){zoomer(1/1.3)};
+$("bFit").onclick=cadrer;
+$("bMes").onclick=function(){
+  mesurer=!mesurer; pts=[]; survol=null; accroche=null;
+  if(mesurer && outil){ outil=null; selAnn=-1; brouillon=null; majPanneau(); }
+  this.classList.toggle("on",mesurer);
+  majCurseur(); dessiner();
+  // l'index d'accrochage n'est construit qu'ici : inutile de le payer sur
+  // une feuille qu'on ne fait que consulter
+  if(mesurer && page && accrochage) preparerAccrochage(plan, page);
+  indice(mesurer?"Cliquez le 1ᵉʳ point de la mesure":"",mesurer?3000:0);
+};
+$("bSnap").onclick=function(){
+  accrochage=!accrochage;
+  this.classList.toggle("on",accrochage);
+  if(!accrochage) accroche=null;
+  else if(mesurer && page) preparerAccrochage(plan, page);
+  dessiner();
+  indice(accrochage?"Accrochage activé":"Accrochage désactivé",2000);
+};
+$("bAnn").onclick=function(){ choisirOutil(outil ? null : "trait"); };
+[].forEach.call(document.querySelectorAll("#annot [data-outil]"), function(b){
+  b.onclick=function(){ choisirOutil(b.getAttribute("data-outil")); };
+});
+[].forEach.call(document.querySelectorAll("#annot [data-coul]"), function(b){
+  b.onclick=function(){
+    couleurA=b.getAttribute("data-coul");
+    var a=annotsDuPlan()[selAnn];
+    if(a){ a.couleur=couleurA; sauver(); }
+    majPanneau(); dessiner();
+  };
+});
+[].forEach.call(document.querySelectorAll("#annot [data-ep]"), function(b){
+  b.onclick=function(){ epaisA=+b.getAttribute("data-ep"); majPanneau(); };
+});
+[].forEach.call(document.querySelectorAll("#annot [data-taille]"), function(b){
+  b.onclick=function(){ tailleA=+b.getAttribute("data-taille"); majPanneau(); };
+});
+$("aPlein").onclick=function(){
+  pleinA=!pleinA;
+  var a=annotsDuPlan()[selAnn];
+  if(a && (a.type==="rect"||a.type==="ellipse")){ a.plein=pleinA; sauver(); }
+  majPanneau(); dessiner();
+};
+$("aRotG").onclick=function(){ tourner(-15); };
+$("aRotD").onclick=function(){ tourner(15); };
+$("aSuppr").onclick=function(){ supprimerAnnot(); majPanneau(); };
+$("aVider").onclick=function(){
+  if(!plan) return;
+  delete annots[plan.id]; selAnn=-1; sauver(); majPanneau(); dessiner();
+};
+
+$("bPdf").onclick=ouvrirExpo;
+$("expoNon").onclick=function(){ $("expo").classList.remove("on"); };
+$("expoTout").onclick=function(){
+  [].forEach.call(document.querySelectorAll("#expoListe input"),
+                  function(c){ c.checked=true; });
+};
+$("expoRien").onclick=function(){
+  [].forEach.call(document.querySelectorAll("#expoListe input"),
+                  function(c){ c.checked=false; });
+};
+$("expoSep").onclick=expoSepares;
+$("expoUn").onclick=expoUnSeul;
+
+$("bClr").onclick=function(){
+  if(!plan) return;
+  delete mesures[plan.id]; pts=[]; survol=null; sauver(); dessiner();
+};
+$("bPrev").onclick=function(){decale(-1)};
+$("bNext").onclick=function(){decale(1)};
+function decale(d){
+  if(!filtre.length) return;
+  var i=plan?filtre.findIndex(function(p){return p.id===plan.id}):-1;
+  ouvrir(filtre[(i+d+filtre.length)%filtre.length]||filtre[0]);
+}
+$("burger").onclick=function(){ $("aside").classList.toggle("open"); };
+
+document.addEventListener("keydown",function(e){
+  // Ctrl+F : le reflexe de tout le monde pour chercher un texte. On prend la
+  // main sur la recherche du navigateur, qui ne verrait rien : le plan est
+  // dessine dans un canvas, pas ecrit dans la page.
+  if((e.ctrlKey||e.metaKey) && (e.key==="f"||e.key==="F")){
+    e.preventDefault(); ouvrirRech(); return;
+  }
+  if(e.key==="F3"){
+    e.preventDefault();
+    if(!$("rech").classList.contains("on")) ouvrirRech();
+    else allerRes(resI + (e.shiftKey ? -1 : 1));
+    return;
+  }
+  if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName)){
+    if(e.key==="Escape") e.target.blur();
+    return;
+  }
+  if($("modal").classList.contains("show")) return;
+  if($("expo").classList.contains("on")){
+    if(e.key==="Escape") $("expo").classList.remove("on");
+    return;
+  }
+  var k=e.key.toLowerCase();
+  if(k==="m") $("bMes").click();
+  else if(k==="a") $("bSnap").click();
+  else if(k==="p"){ e.preventDefault(); ouvrirExpo(); }
+  else if(k==="n"){ e.preventDefault(); $("bAnn").click(); }
+  else if((k==="delete"||k==="backspace") && outil && selAnn>=0){
+    e.preventDefault(); supprimerAnnot(); majPanneau();
+  }
+  else if(k==="f") cadrer();
+  else if(k==="t") basculerTrace();
+  else if(k==="escape"){
+    if($("rech").classList.contains("on")) fermerRech();
+    pts=[]; survol=null; indice("",0); dessiner();
+  }
+  else if(e.key==="ArrowDown"||e.key==="ArrowRight"){ e.preventDefault(); decale(1); }
+  else if(e.key==="ArrowUp"||e.key==="ArrowLeft"){ e.preventDefault(); decale(-1); }
+  else if(k==="+"||k==="="){ zoomer(1.3); }
+  else if(k==="-"){ zoomer(1/1.3); }
+});
+
+// ---------------------------------------------------------------- recherche
+// Ctrl+F : chercher un TEXTE DANS LES PLANS (reperes de poteaux, noms de
+// coupes, nomenclatures, annotations...), et pas seulement dans les titres de
+// la liste a gauche. Le texte est relu dans le PDF lui-meme (pdf.js
+// `getTextContent`) : c'est exactement celui qu'on lit a l'ecran, dans le meme
+// repere que les mesures -- donc on peut le SURLIGNER a sa place et s'y
+// rendre. Les annotations posees dans la visionneuse sont cherchees aussi.
+var TXT = {};                     // id plan -> mots releves dans le PDF
+var resu = [], resI = -1;         // resultats, et resultat courant
+var rechQ = "", rechTous = false, rechJeton = 0, sautRes = null, rechMin = null;
+
+// Minuscules SANS accent, en gardant la correspondance vers le texte
+// d'origine : « Réservation » se trouve en tapant « reservation », et on sait
+// quand meme quelles lettres surligner.
+function aplatir(s){
+  var t = "", m = [];
+  for(var i=0;i<s.length;i++){
+    var c = s.charAt(i).toLowerCase();
+    try{ c = c.normalize("NFD").replace(/[̀-ͯ]/g, ""); }catch(e){}
+    if(!c) c = s.charAt(i).toLowerCase();
+    for(var j=0;j<c.length;j++){ t += c.charAt(j); m.push(i); }
+  }
+  m.push(s.length);
+  return {t:t, m:m};
+}
+
+// Mots d'un plan, avec leur place sur la feuille. Le plan n'a pas besoin
+// d'etre ouvert : on charge son PDF le temps de le lire, puis on le referme
+// (un carnet pese plusieurs Mo, on n'en garde pas cinquante en memoire). Le
+// releve, lui, est garde : la recherche suivante est immediate.
+function motsDuPlan(p, ok){
+  var s = source(p);                // PDF affiche : avec ou sans trace
+  if(TXT[s.id]) return ok(TXT[s.id]);
+  function relever(pg, fini){
+    pg.getTextContent().then(function(tc){
+      var vp = pg.getViewport({scale:1}), U = pdfjsLib.Util, out = [];
+      (tc.items||[]).forEach(function(it){
+        var st = it.str;
+        if(!st || !st.replace(/\s/g,"")) return;
+        // matrice du texte ramenee dans le repere de la page (Y vers le bas),
+        // celui des mesures et des annotations
+        var tx = U.transform(vp.transform, it.transform);
+        var n = Math.hypot(tx[0], tx[1]) || 1;
+        out.push({s:st, plat:aplatir(st),
+                  x:tx[4], y:tx[5],            // debut du texte (ligne de base)
+                  ux:tx[0]/n, uy:tx[1]/n,      // sens de lecture (texte tourne compris)
+                  hx:tx[2], hy:tx[3],          // hauteur des lettres, vers le haut
+                  w:it.width || 0});
+      });
+      TXT[s.id] = out; fini(out);
+    })["catch"](function(){ TXT[s.id] = []; fini([]); });
+  }
+  if(cache[s.id]) return relever(cache[s.id].page, ok);
+  chargerOctets(s, function(octets){
+    var docu = null;
+    pdfjsLib.getDocument({data:octets, worker:worker()}).promise.then(function(pdf){
+      docu = pdf; return pdf.getPage(1);
+    }).then(function(pg){
+      relever(pg, function(l){ try{ docu.destroy(); }catch(e){} ok(l); });
+    })["catch"](function(){
+      try{ if(docu) docu.destroy(); }catch(e){}
+      TXT[s.id] = []; ok([]);
+    });
+  }, function(){ TXT[s.id] = []; ok([]); });
+}
+
+function chercherMots(p, mots, q, sortie){
+  for(var i=0;i<mots.length;i++){
+    var it = mots[i], d = 0, k;
+    while((k = it.plat.t.indexOf(q, d)) >= 0){
+      sortie.push({p:p, it:it, s:it.s,
+                   i0:it.plat.m[k], i1:it.plat.m[k + q.length]});
+      d = k + Math.max(1, q.length);
+    }
+  }
+}
+
+function chercherAnnots(p, q, sortie){
+  (annots[p.id] || []).forEach(function(a){
+    if(!a.txt) return;
+    var pl = aplatir(a.txt), k = pl.t.indexOf(q);
+    if(k < 0) return;
+    sortie.push({p:p, ann:a, s:a.txt, i0:pl.m[k], i1:pl.m[k + q.length]});
+  });
+}
+
+// Quadrilatere du texte trouve, en coordonnees feuille (le texte d'un plan
+// peut etre tourne : on travaille avec les 4 coins, pas avec un rectangle).
+function quadRes(r){
+  if(r.ann) return coinsTexte(r.ann);
+  var it = r.it, n = it.s.length || 1;
+  var d0 = it.w * (r.i0 / n), d1 = it.w * (r.i1 / n);
+  if(d1 - d0 < 0.5) d1 = d0 + Math.max(0.5, it.w / n);
+  var a = {x: it.x + it.ux*d0, y: it.y + it.uy*d0};
+  var b = {x: it.x + it.ux*d1, y: it.y + it.uy*d1};
+  return [a, b, {x:b.x + it.hx, y:b.y + it.hy}, {x:a.x + it.hx, y:a.y + it.hy}];
+}
+
+function dessinerTrouves(){
+  if(!plan) return;
+  for(var i=0;i<resu.length;i++){
+    if(resu[i].p.id !== plan.id) continue;
+    var q = quadRes(resu[i]).map(versEcran), cour = (i === resI);
+    ctx.beginPath();
+    ctx.moveTo(q[0].x, q[0].y);
+    for(var k=1;k<4;k++) ctx.lineTo(q[k].x, q[k].y);
+    ctx.closePath();
+    ctx.fillStyle = cour ? "rgba(255,160,0,.45)" : "rgba(255,225,0,.28)";
+    ctx.fill();
+    if(cour){ ctx.strokeStyle = "#ff9500"; ctx.lineWidth = 1.5; ctx.stroke(); }
+  }
+}
+
+// Amene le resultat au centre de l'ecran, assez pres pour etre LU sans jamais
+// le faire deborder.
+function cadrerSur(r){
+  var q = quadRes(r), x0=1e9, y0=1e9, x1=-1e9, y1=-1e9;
+  q.forEach(function(pt){
+    x0=Math.min(x0,pt.x); y0=Math.min(y0,pt.y);
+    x1=Math.max(x1,pt.x); y1=Math.max(y1,pt.y);
+  });
+  var rc = stage.getBoundingClientRect();
+  if(rc.width < 2 || rc.height < 2) return;
+  var w = Math.max(x1-x0, 1), h = Math.max(y1-y0, 1);
+  zoom = Math.max(0.05, Math.min(rc.width*0.45/w, rc.height*0.45/h, 5));
+  besoinFit = false; autoCadre = false;
+  panX = rc.width/2 - (x0+x1)/2*zoom;
+  panY = rc.height/2 - (y0+y1)/2*zoom;
+  planifier();
+}
+
+function allerRes(i){
+  if(!resu.length) return;
+  resI = (i + resu.length) % resu.length;
+  var r = resu[resI];
+  majCourant();
+  if(!plan || r.p.id !== plan.id){ sautRes = r; ouvrir(r.p); return; }
+  cadrerSur(r);
+}
+
+function echapper(s){
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Liste des resultats : seulement quand on cherche dans TOUS les plans (sinon
+// tout est deja visible sur la feuille affichee).
+var RES_MAX = 300;
+function listerRes(){
+  var box = $("rRes");
+  box.classList.toggle("on", rechTous && resu.length > 0);
+  if(!(rechTous && resu.length)){ box.innerHTML = ""; return; }
+  box.innerHTML = "";
+  resu.slice(0, RES_MAX).forEach(function(r, i){
+    var b = document.createElement("button");
+    b.className = (i === resI ? "on" : "");
+    b.innerHTML = '<div class="pl"></div><div class="tx"></div>';
+    b.children[0].textContent = r.p.num + (r.ann ? " · annotation" : "");
+    b.children[1].innerHTML = echapper(r.s.slice(0, r.i0)) + "<mark>" +
+      echapper(r.s.slice(r.i0, r.i1)) + "</mark>" + echapper(r.s.slice(r.i1));
+    b.title = r.p.num + " — " + r.p.nom;
+    b.onclick = function(){ allerRes(i); };
+    box.appendChild(b);
+  });
+  if(resu.length > RES_MAX){
+    var d = document.createElement("div");
+    d.className = "pl";
+    d.style.padding = "6px 8px";
+    d.textContent = "… " + (resu.length - RES_MAX) + " autres résultats";
+    box.appendChild(d);
+  }
+}
+
+function majCourant(){
+  var b = $("rRes").children;
+  for(var i=0;i<b.length;i++)
+    if(b[i].className !== undefined) b[i].className = (i === resI ? "on" : "");
+  majNb();
+  dessiner();
+}
+
+var rechEtat = null;              // {n, tot} pendant un balayage de tous les plans
+function majNb(){
+  var nb = $("rNb");
+  if(!rechQ){ nb.textContent = "—"; }
+  else if(rechEtat) nb.textContent = resu.length + " · " + rechEtat.n + "/" + rechEtat.tot + " plans…";
+  else if(!resu.length) nb.textContent = "aucun";
+  else nb.textContent = (resI >= 0 ? resI+1 : 1) + "/" + resu.length;
+  $("rPrec").disabled = $("rSuiv").disabled = !resu.length;
+}
+
+function lancerRecherche(){
+  var mien = ++rechJeton;
+  rechQ = aplatir($("rIn").value.trim()).t;
+  resu = []; resI = -1; rechEtat = null;
+  if(!rechQ){ majNb(); listerRes(); dessiner(); return; }
+  var liste = rechTous ? PLANS.slice() : (plan ? [plan] : []);
+  if(!liste.length){ majNb(); listerRes(); dessiner(); return; }
+  var n = 0;
+  (function suite(){
+    if(mien !== rechJeton) return;              // frappe suivante : on abandonne
+    if(n >= liste.length){
+      rechEtat = null; listerRes();
+      if(resu.length) allerRes(0); else { majNb(); dessiner(); }
+      return;
+    }
+    var p = liste[n++];
+    rechEtat = (liste.length > 1) ? {n:n, tot:liste.length} : null;
+    majNb();
+    motsDuPlan(p, function(mots){
+      if(mien !== rechJeton) return;
+      chercherMots(p, mots, rechQ, resu);
+      chercherAnnots(p, rechQ, resu);
+      majNb(); dessiner();
+      setTimeout(suite, 0);                     // laisse l'interface respirer
+    });
+  })();
+}
+
+function ouvrirRech(){
+  $("rech").classList.add("on");
+  var i = $("rIn");
+  i.focus(); i.select();
+}
+function fermerRech(){
+  rechJeton++;                                  // arrete un balayage en cours
+  $("rech").classList.remove("on");
+  resu = []; resI = -1; rechQ = ""; rechEtat = null;
+  $("rIn").blur(); majNb(); listerRes(); dessiner();
+}
+
+$("rIn").oninput = function(){
+  clearTimeout(rechMin);
+  rechMin = setTimeout(lancerRecherche, 220);
+};
+$("rIn").onkeydown = function(e){
+  if(e.key === "Enter"){
+    e.preventDefault(); e.stopPropagation();
+    clearTimeout(rechMin);
+    if(rechQ !== aplatir($("rIn").value.trim()).t) lancerRecherche();
+    else allerRes(resI + (e.shiftKey ? -1 : 1));
+  }else if(e.key === "Escape"){
+    e.preventDefault(); e.stopPropagation(); fermerRech();
+  }
+};
+$("rSuiv").onclick = function(){ allerRes(resI + 1); };
+$("rPrec").onclick = function(){ allerRes(resI - 1); };
+$("rFerm").onclick = fermerRech;
+$("bRech").onclick = ouvrirRech;
+$("bTrace").onclick = basculerTrace;
+$("rTous").onchange = function(){
+  rechTous = this.checked;
+  lancerRecherche();
+};
+
+// ---------------------------------------------------------------- calibration
+function lancerCalibration(){
+  var l=(mesures[plan.id]||[]);
+  if(!l.length){
+    indice("Tracez d'abord une mesure sur une cote connue, puis « Calibrer… »",5000);
+    return;
+  }
+  var m=l[l.length-1], mmF=Math.hypot(m.b.x-m.a.x,m.b.y-m.a.y)*plan._mmParPt;
+  demander("Calibrer l'échelle",
+    "Dernière mesure tracée : "+mmF.toFixed(1)+" mm sur la feuille.<br>"+
+    "Saisissez sa longueur RÉELLE (en mètres) — par exemple la valeur d'une cote du plan.",
+    "", function(v){
+      var reel=parseFloat(String(v).replace(",","."));
+      if(!(reel>0)){ indice("Valeur invalide",3000); return; }
+      calib[plan.id]=(reel*1000)/mmF;
+      forceEch=0; sauver(); majSelectEchelle(); dessiner();
+      indice("Échelle calibrée : 1:"+Math.round(calib[plan.id])+" pour ce plan",4000);
+    });
+}
+function demander(titre,html,val,ok){
+  $("mTitre").textContent=titre; $("mTexte").innerHTML=html;
+  $("mInput").value=val; $("modal").classList.add("show");
+  setTimeout(function(){$("mInput").focus();$("mInput").select()},30);
+  function fermer(){ $("modal").classList.remove("show"); $("mInput").onkeydown=null; }
+  $("mNon").onclick=fermer;
+  $("mOui").onclick=function(){ var v=$("mInput").value; fermer(); ok(v); };
+  $("mInput").onkeydown=function(e){
+    if(e.key==="Enter"){ e.preventDefault(); $("mOui").click(); }
+    if(e.key==="Escape"){ e.preventDefault(); fermer(); }
+  };
+}
+
+// ---------------------------------------------------------------- demarrage
+function surTaille(){ if(besoinFit||autoCadre) ajuster(); else planifier(); }
+addEventListener("resize",surTaille);
+if(window.ResizeObserver) new ResizeObserver(surTaille).observe(stage);
+
+function demarrer(){
+  listerPlans();
+  if(PLANS.length) ouvrir(PLANS[0]);
+  else{
+    $("splash").innerHTML="<b>Aucun plan publié</b><span>Relancez « Visionneuse web » depuis Revit.</span>";
+    dessiner();
+  }
+}
+
+// En file:// (double-clic), le navigateur interdit de demarrer un vrai Worker
+// depuis un fichier local. On charge donc le moteur de rendu comme un simple
+// script - ce que file:// autorise - et pdf.js s'en sert directement.
+function lancer(){
+  if(location.protocol==="file:" && !window.pdfjsWorker){
+    var wsc=document.createElement("script");
+    wsc.src="pdfjs/pdf.worker.min.js";
+    wsc.onload=demarrer; wsc.onerror=demarrer;
+    document.head.appendChild(wsc);
+  }else{
+    demarrer();
+  }
+}
+
+if(typeof GARDE!=="undefined" && GARDE){
+  // Le chiffrement du navigateur n'existe que sur une page servie en https
+  // (ou en local). Ouverte par double-clic, la page ne peut pas dechiffrer :
+  // autant le dire clairement plutot que d'echouer sans raison visible.
+  if(!(window.crypto && crypto.subtle)){
+    $("coffre").classList.add("on");
+    $("cofErr").textContent = "Ces plans ne peuvent être ouverts que depuis "+
+      "le lien https qui vous a été communiqué, pas par un double-clic sur le "+
+      "fichier.";
+    $("cofOk").disabled = true;
+  }else{
+    demanderMotDePasse();
+  }
+}else{
+  poserDonnees(typeof DONNEES!=="undefined" ? DONNEES : null);
+  lancer();
+}
+
+})();
+</script>
+</body>
+</html>
