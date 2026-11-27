@@ -1,0 +1,32 @@
+{
+ "projets": {
+  "sakata-exe": {
+   "nom": "SAKATA-EXE",
+   "statut": "en_cours",
+   "protege": true,
+   "maj": "09/11/2026 06:43",
+   "nb": 5
+  },
+  "centre-de-gestion-exe-go": {
+   "statut": "en_cours",
+   "maj": "27/11/2026 11:19",
+   "nb": 5,
+   "protege": true,
+   "nom": "CENTRE DE GESTION-EXE-GO"
+  },
+  "serene-exe-2027-optimise": {
+   "nom": "SERENE - EXE - 2027 optimise",
+   "statut": "en_cours",
+   "protege": true,
+   "maj": "18/11/2026 14:06",
+   "nb": 2
+  },
+  "serene-exe-2027": {
+   "nom": "SERENE - EXE - 2027",
+   "statut": "en_cours",
+   "protege": true,
+   "maj": "23/11/2026 15:20",
+   "nb": 30
+  }
+ }
+}
